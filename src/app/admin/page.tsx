@@ -15,7 +15,10 @@ import {
     ChevronUp,
     FileText,
     Download,
+    BarChart3,
+    List
 } from 'lucide-react';
+import { Dashboard } from '@/components/admin/Dashboard';
 
 const STATUS_CONFIG: Record<ClientStatus, { label: string; className: string }> = {
     pending: { label: 'Pendente', className: 'badge-pending' },
@@ -32,6 +35,7 @@ export default function AdminPage() {
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [view, setView] = useState<'list' | 'dashboard'>('list');
 
     useEffect(() => {
         if (!isAuthorized) return;
@@ -197,157 +201,187 @@ export default function AdminPage() {
                     </div>
                 </div>
 
-                {/* Filters */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-light" size={16} />
-                        <input
-                            type="text"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="form-input pl-9"
-                            placeholder="Buscar por nome ou CPF..."
-                        />
-                    </div>
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value as ClientStatus | 'all')}
-                        className="form-select w-full sm:w-48"
+                {/* View Switcher */}
+                <div className="flex border-b border-border">
+                    <button
+                        onClick={() => setView('dashboard')}
+                        className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${view === 'dashboard'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-text-muted hover:text-text hover:border-border'
+                            }`}
                     >
-                        <option value="all">Todos os status</option>
-                        <option value="pending">Pendentes</option>
-                        <option value="approved">Aprovados</option>
-                        <option value="rejected">Rejeitados</option>
-                        <option value="incomplete">Incompletos</option>
-                    </select>
+                        <BarChart3 size={16} />
+                        Dashboard
+                    </button>
+                    <button
+                        onClick={() => setView('list')}
+                        className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${view === 'list'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-text-muted hover:text-text hover:border-border'
+                            }`}
+                    >
+                        <List size={16} />
+                        Lista de Cadastros
+                    </button>
                 </div>
 
-                {/* Table */}
-                {filtered.length === 0 ? (
-                    <div className="card text-center py-12">
-                        <FileText className="mx-auto text-text-light mb-3" size={40} />
-                        <p className="text-text-muted font-medium">Nenhum cadastro encontrado</p>
-                        <p className="text-sm text-text-light mt-1">
-                            {clients.length === 0
-                                ? 'Ainda não há cadastros. Quando um cliente preencher o formulário, ele aparecerá aqui.'
-                                : 'Tente ajustar os filtros de busca.'}
-                        </p>
-                    </div>
+                {view === 'dashboard' ? (
+                    <Dashboard clients={clients} />
                 ) : (
-                    <div className="space-y-3">
-                        {filtered.map((client) => (
-                            <div key={client.id} className="card p-0 overflow-hidden">
-                                {/* Row summary */}
-                                <button
-                                    type="button"
-                                    onClick={() => setExpandedId(expandedId === client.id ? null : client.id)}
-                                    className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-surface transition-colors cursor-pointer"
-                                >
-                                    <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 items-center">
-                                        <div>
-                                            <p className="font-medium text-text truncate">{client.personalData.name || 'Sem nome'}</p>
-                                            <p className="text-xs text-text-light">{client.personalData.cpf}</p>
-                                        </div>
-                                        <div className="hidden sm:block">
-                                            <p className="text-sm text-text-muted">{client.contact.email}</p>
-                                        </div>
-                                        <div className="hidden sm:block">
-                                            <p className="text-sm text-text-muted">
-                                                {new Date(client.createdAt).toLocaleDateString('pt-BR')}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className={STATUS_CONFIG[client.status].className}>
-                                                {STATUS_CONFIG[client.status].label}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    {expandedId === client.id ? (
-                                        <ChevronUp size={16} className="text-text-light" />
-                                    ) : (
-                                        <ChevronDown size={16} className="text-text-light" />
-                                    )}
-                                </button>
+                    <div className="space-y-6">
+                        {/* Filters */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-light" size={16} />
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="form-input pl-9"
+                                    placeholder="Buscar por nome ou CPF..."
+                                />
+                            </div>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as ClientStatus | 'all')}
+                                className="form-select w-full sm:w-48"
+                            >
+                                <option value="all">Todos os status</option>
+                                <option value="pending">Pendentes</option>
+                                <option value="approved">Aprovados</option>
+                                <option value="rejected">Rejeitados</option>
+                                <option value="incomplete">Incompletos</option>
+                            </select>
+                        </div>
 
-                                {/* Expanded detail */}
-                                {expandedId === client.id && (
-                                    <div className="border-t border-border px-5 py-5 bg-surface space-y-4">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                                            <Detail label="Nome" value={client.personalData.name} />
-                                            <Detail label="CPF" value={client.personalData.cpf} />
-                                            <Detail label="RG" value={`${client.personalData.rg} - ${client.personalData.rgIssuer}`} />
-                                            <Detail label="Data Nascimento" value={client.personalData.birthDate} />
-                                            <Detail label="E-mail" value={client.contact.email} />
-                                            <Detail label="Celular" value={client.contact.mobile} />
-                                            <Detail label="Endereço" value={
-                                                `${client.address.streetType || ''} ${client.address.street || ''}, ${client.address.number || ''} - ${client.address.neighborhood || ''}, ${client.address.city || ''}/${client.address.state || ''}`
-                                            } />
-                                            <Detail label="CEP" value={client.address.zipCode} />
-                                            <Detail label="Ocupação" value={client.professional.mainOccupation} />
-                                            <Detail label="Renda Declarada" value={client.professional.declaredIncome} />
-                                            <Detail label="Documentos" value={`${client.documents.length} enviado(s)`} />
-                                            {client.notes && <Detail label="Observações" value={client.notes} />}
-                                        </div>
+                        {/* Table */}
+                        {filtered.length === 0 ? (
+                            <div className="card text-center py-12">
+                                <FileText className="mx-auto text-text-light mb-3" size={40} />
+                                <p className="text-text-muted font-medium">Nenhum cadastro encontrado</p>
+                                <p className="text-sm text-text-light mt-1">
+                                    {clients.length === 0
+                                        ? 'Ainda não há cadastros. Quando um cliente preencher o formulário, ele aparecerá aqui.'
+                                        : 'Tente ajustar os filtros de busca.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {filtered.map((client) => (
+                                    <div key={client.id} className="card p-0 overflow-hidden">
+                                        {/* Row summary */}
+                                        <button
+                                            type="button"
+                                            onClick={() => setExpandedId(expandedId === client.id ? null : client.id)}
+                                            className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-surface transition-colors cursor-pointer"
+                                        >
+                                            <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 items-center">
+                                                <div>
+                                                    <p className="font-medium text-text truncate">{client.personalData.name || 'Sem nome'}</p>
+                                                    <p className="text-xs text-text-light">{client.personalData.cpf}</p>
+                                                </div>
+                                                <div className="hidden sm:block">
+                                                    <p className="text-sm text-text-muted">{client.contact.email}</p>
+                                                </div>
+                                                <div className="hidden sm:block">
+                                                    <p className="text-sm text-text-muted">
+                                                        {new Date(client.createdAt).toLocaleDateString('pt-BR')}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={STATUS_CONFIG[client.status].className}>
+                                                        {STATUS_CONFIG[client.status].label}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {expandedId === client.id ? (
+                                                <ChevronUp size={16} className="text-text-light" />
+                                            ) : (
+                                                <ChevronDown size={16} className="text-text-light" />
+                                            )}
+                                        </button>
 
-                                        {/* Document previews */}
-                                        {client.documents.length > 0 && (
-                                            <div>
-                                                <p className="text-xs font-medium text-text-muted mb-2">Documentos:</p>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {client.documents.map((doc) => (
-                                                        <div key={doc.id} className="border border-border rounded-md overflow-hidden">
-                                                            {doc.fileUrl.startsWith('data:image') ? (
-                                                                <img src={doc.fileUrl} alt={doc.fileName} className="w-20 h-20 object-cover" />
-                                                            ) : (
-                                                                <div className="w-20 h-20 flex items-center justify-center bg-surface-alt">
-                                                                    <FileText size={24} className="text-text-light" />
+                                        {/* Expanded detail */}
+                                        {expandedId === client.id && (
+                                            <div className="border-t border-border px-5 py-5 bg-surface space-y-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                                                    <Detail label="Nome" value={client.personalData.name} />
+                                                    <Detail label="CPF" value={client.personalData.cpf} />
+                                                    <Detail label="RG" value={`${client.personalData.rg} - ${client.personalData.rgIssuer}`} />
+                                                    <Detail label="Data Nascimento" value={client.personalData.birthDate} />
+                                                    <Detail label="E-mail" value={client.contact.email} />
+                                                    <Detail label="Celular" value={client.contact.mobile} />
+                                                    <Detail label="Endereço" value={
+                                                        `${client.address.streetType || ''} ${client.address.street || ''}, ${client.address.number || ''} - ${client.address.neighborhood || ''}, ${client.address.city || ''}/${client.address.state || ''}`
+                                                    } />
+                                                    <Detail label="CEP" value={client.address.zipCode} />
+                                                    <Detail label="Ocupação" value={client.professional.mainOccupation} />
+                                                    <Detail label="Renda Declarada" value={client.professional.declaredIncome} />
+                                                    <Detail label="Documentos" value={`${client.documents.length} enviado(s)`} />
+                                                    {client.notes && <Detail label="Observações" value={client.notes} />}
+                                                </div>
+
+                                                {/* Document previews */}
+                                                {client.documents.length > 0 && (
+                                                    <div>
+                                                        <p className="text-xs font-medium text-text-muted mb-2">Documentos:</p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {client.documents.map((doc) => (
+                                                                <div key={doc.id} className="border border-border rounded-md overflow-hidden">
+                                                                    {doc.fileUrl.startsWith('data:image') ? (
+                                                                        <img src={doc.fileUrl} alt={doc.fileName} className="w-20 h-20 object-cover" />
+                                                                    ) : (
+                                                                        <div className="w-20 h-20 flex items-center justify-center bg-surface-alt">
+                                                                            <FileText size={24} className="text-text-light" />
+                                                                        </div>
+                                                                    )}
+                                                                    <p className="text-[10px] text-text-light px-1 py-0.5 truncate w-20">{doc.type}</p>
                                                                 </div>
-                                                            )}
-                                                            <p className="text-[10px] text-text-light px-1 py-0.5 truncate w-20">{doc.type}</p>
+                                                            ))}
                                                         </div>
-                                                    ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Actions */}
+                                                <div className="flex gap-2 pt-2 border-t border-border">
+                                                    {client.status !== 'approved' && (
+                                                        <button
+                                                            onClick={() => handleStatusChange(client.id, 'approved', client.userId)}
+                                                            className="btn-primary text-sm py-2"
+                                                        >
+                                                            <CheckCircle2 size={14} />
+                                                            Aprovar
+                                                        </button>
+                                                    )}
+                                                    {client.status !== 'rejected' && (
+                                                        <button
+                                                            onClick={() => handleStatusChange(client.id, 'rejected', client.userId)}
+                                                            className="btn-danger text-sm py-2"
+                                                        >
+                                                            <XCircle size={14} />
+                                                            Rejeitar
+                                                        </button>
+                                                    )}
+                                                    {client.status !== 'pending' && (
+                                                        <button
+                                                            onClick={() => handleStatusChange(client.id, 'pending', client.userId)}
+                                                            className="btn-secondary text-sm py-2"
+                                                        >
+                                                            <Clock size={14} />
+                                                            Mover para Pendente
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* Actions */}
-                                        <div className="flex gap-2 pt-2 border-t border-border">
-                                            {client.status !== 'approved' && (
-                                                <button
-                                                    onClick={() => handleStatusChange(client.id, 'approved', client.userId)}
-                                                    className="btn-primary text-sm py-2"
-                                                >
-                                                    <CheckCircle2 size={14} />
-                                                    Aprovar
-                                                </button>
-                                            )}
-                                            {client.status !== 'rejected' && (
-                                                <button
-                                                    onClick={() => handleStatusChange(client.id, 'rejected', client.userId)}
-                                                    className="btn-danger text-sm py-2"
-                                                >
-                                                    <XCircle size={14} />
-                                                    Rejeitar
-                                                </button>
-                                            )}
-                                            {client.status !== 'pending' && (
-                                                <button
-                                                    onClick={() => handleStatusChange(client.id, 'pending', client.userId)}
-                                                    className="btn-secondary text-sm py-2"
-                                                >
-                                                    <Clock size={14} />
-                                                    Mover para Pendente
-                                                </button>
-                                            )}
-                                        </div>
                                     </div>
-                                )}
+                                ))}
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
             </main>
-        </div>
+        </div >
     );
 }
 
