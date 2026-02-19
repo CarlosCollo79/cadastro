@@ -33,6 +33,7 @@ interface FormContextType {
     removeDocument: (id: string) => void;
     updateNotes: (notes: string) => void;
     resetForm: () => void;
+    loadFormData: (data: Partial<FormState>) => void;
 }
 
 const initialState: FormState = {
@@ -94,6 +95,10 @@ export function FormProvider({ children }: { children: ReactNode }) {
         setState(initialState);
     }, []);
 
+    const loadFormData = useCallback((data: Partial<FormState>) => {
+        setState((prev) => ({ ...prev, ...data }));
+    }, []);
+
     return (
         <FormContext.Provider
             value={{
@@ -108,6 +113,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
                 removeDocument,
                 updateNotes,
                 resetForm,
+                loadFormData,
             }}
         >
             {children}

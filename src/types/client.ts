@@ -83,10 +83,8 @@ export interface Client extends ClientFormData {
 
 export const WIZARD_STEPS = [
     { id: 1, key: 'personalData', label: 'Dados Pessoais', labelEn: 'Personal Data' },
-    { id: 2, key: 'nationality', label: 'Naturalidade', labelEn: 'Nationality' },
-    { id: 3, key: 'address', label: 'Endereço', labelEn: 'Address' },
-    { id: 4, key: 'contact', label: 'Contato', labelEn: 'Contact' },
-    { id: 5, key: 'professional', label: 'Profissional', labelEn: 'Professional' },
-    { id: 6, key: 'documents', label: 'Documentos', labelEn: 'Documents' },
-    { id: 7, key: 'review', label: 'Revisão', labelEn: 'Review' },
+    { id: 2, key: 'address', label: 'Endereço', labelEn: 'Address' },
+    { id: 3, key: 'contact', label: 'Contato & Profissional', labelEn: 'Contact & Professional' },
+    { id: 4, key: 'documents', label: 'Documentos', labelEn: 'Documents' },
+    { id: 5, key: 'review', label: 'Revisão', labelEn: 'Review' },
 ] as const;

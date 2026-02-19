@@ -21,27 +21,7 @@ function getLabel(value: string, options: ReadonlyArray<{ value: string; label: 
     return options.find((o) => o.value === value)?.label ?? value;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-    return (
-        <div className="border border-border rounded-lg overflow-hidden">
-            <div className="bg-surface px-4 py-2.5">
-                <h3 className="text-sm font-semibold text-primary">{title}</h3>
-            </div>
-            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
-                {children}
-            </div>
-        </div>
-    );
-}
-
-function Field({ label, value }: { label: string; value?: string }) {
-    return (
-        <div>
-            <dt className="text-xs text-text-muted">{label}</dt>
-            <dd className="text-sm font-medium mt-0.5">{value || '—'}</dd>
-        </div>
-    );
-}
+import { Section, Field } from '@/components/ui/DataDisplay';
 
 export function ReviewStep({ onBack }: Props) {
     const { state, updateNotes, resetForm } = useFormStore();

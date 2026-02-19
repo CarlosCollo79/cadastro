@@ -43,5 +43,12 @@ export function formatPhone(value: string): string {
 export function formatCEP(value: string): string {
     const cleaned = value.replace(/\D/g, '').slice(0, 8);
     if (cleaned.length <= 5) return cleaned;
-    return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
+    return cleaned.replace(/(\d{5})(\d{1,3})/, '$1-$2');
+}
+
+export function formatDate(value: string): string {
+    const cleaned = value.replace(/\D/g, '').slice(0, 8);
+    if (cleaned.length <= 2) return cleaned;
+    if (cleaned.length <= 4) return `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
+    return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4)}`;
 }

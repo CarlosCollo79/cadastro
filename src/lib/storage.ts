@@ -12,6 +12,11 @@ export function getClientById(id: string): Client | undefined {
     return getClients().find((c) => c.id === id);
 }
 
+export function getLatestClient(): Client | undefined {
+    const clients = getClients();
+    return clients.length > 0 ? clients[clients.length - 1] : undefined;
+}
+
 export function saveClient(client: Client): void {
     const clients = getClients();
     const index = clients.findIndex((c) => c.id === client.id);

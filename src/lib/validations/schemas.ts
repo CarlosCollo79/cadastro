@@ -1,26 +1,30 @@
 import { z } from 'zod';
 import { isValidCPF } from './cpf';
 
+const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+
 export const personalDataSchema = z.object({
     cpf: z.string()
         .min(1, 'CPF é obrigatório')
         .refine((val) => isValidCPF(val), { message: 'CPF inválido' }),
     name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
     socialName: z.string().optional(),
-    birthDate: z.string().min(1, 'Data de nascimento é obrigatória'),
+    birthDate: z.string()
+        .min(1, 'Data de nascimento é obrigatória')
+        .regex(dateRegex, 'Formato: dd/mm/aaaa'),
     gender: z.enum(['masculino', 'feminino', 'outro', 'nao_informado'], {
-        errorMap: () => ({ message: 'Selecione o gênero' }),
+        error: 'Selecione o gênero',
     }),
     maritalStatus: z.enum(['solteiro', 'casado', 'divorciado', 'viuvo', 'separado', 'uniao_estavel'], {
-        errorMap: () => ({ message: 'Selecione o estado civil' }),
+        error: 'Selecione o estado civil',
     }),
     rg: z.string().min(1, 'RG é obrigatório'),
     rgIssuer: z.string().min(1, 'Órgão expedidor é obrigatório'),
-    rgIssueDate: z.string().min(1, 'Data de emissão é obrigatória'),
+    rgIssueDate: z.string()
+        .min(1, 'Data de emissão é obrigatória')
+        .regex(dateRegex, 'Formato: dd/mm/aaaa'),
     rne: z.string().optional(),
-});
-
-export const nationalitySchema = z.object({
+    // Nationality fields merged
     birthState: z.string().min(1, 'UF é obrigatório'),
     birthCity: z.string().min(1, 'Cidade é obrigatória'),
     originCountry: z.string().min(1, 'País de origem é obrigatório'),
@@ -44,15 +48,13 @@ export const contactSchema = z.object({
     phone: z.string().optional(),
     mobile: z.string().min(1, 'Celular é obrigatório'),
     emailType: z.enum(['pessoal', 'comercial', 'outro'], {
-        errorMap: () => ({ message: 'Selecione o tipo de e-mail' }),
+        error: 'Selecione o tipo de e-mail',
     }),
     email: z.string().email('E-mail inválido'),
     fatherName: z.string().optional(),
     motherName: z.string().optional(),
     referral: z.string().optional(),
-});
-
-export const professionalSchema = z.object({
+    // Professional fields merged
     occupationNature: z.string().min(1, 'Natureza de ocupação é obrigatória'),
     mainOccupation: z.string().min(1, 'Ocupação principal é obrigatória'),
     activitySegment: z.string().min(1, 'Segmento de atividade é obrigatório'),
@@ -60,7 +62,5 @@ export const professionalSchema = z.object({
 });
 
 export type PersonalDataInput = z.infer<typeof personalDataSchema>;
-export type NationalityInput = z.infer<typeof nationalitySchema>;
 export type AddressInput = z.infer<typeof addressSchema>;
 export type ContactInput = z.infer<typeof contactSchema>;
-export type ProfessionalInput = z.infer<typeof professionalSchema>;

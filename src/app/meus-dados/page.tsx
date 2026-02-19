@@ -1,0 +1,172 @@
+'use client';
+
+import { getLatestClient } from '@/lib/storage';
+import { Section, Field } from '@/components/ui/DataDisplay';
+import {
+    GENDER_OPTIONS,
+    MARITAL_STATUS_OPTIONS,
+    EMAIL_TYPE_OPTIONS,
+    BRAZILIAN_STATES,
+    COUNTRIES,
+} from '@/lib/constants';
+import { Edit2, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { Client } from '@/types/client';
+
+function getLabel(value: string, options: ReadonlyArray<{ value: string; label: string }>) {
+    return options.find((o) => o.value === value)?.label ?? value;
+}
+
+export default function MyDataPage() {
+    const [client, setClient] = useState<Client | null>(null);
+    const router = useRouter();
+
+    useEffect(() => {
+        const stored = getLatestClient();
+        if (stored) {
+            setTimeout(() => setClient(stored), 0);
+        }
+    }, []);
+
+    if (!client) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-text-muted mb-4">Nenhum dado encontrado.</p>
+                    <Link href="/cadastro" className="btn-primary">
+                        Iniciar Cadastro
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    const { personalData: pd, nationality: nat, address: addr, contact: ct, professional: prof } = client;
+
+    const handleEdit = (step: number) => {
+        // We pass mode=edit to tell the wizard to load existing data
+        // And we pass the step to go directly to that step
+        router.push(`/cadastro?mode=edit&step=${step}`);
+    };
+
+
+
+    return (
+        <div className="min-h-screen bg-background pb-12">
+            <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
+                    <Link href="/" className="text-text-muted hover:text-text transition-colors">
+                        <ArrowLeft size={20} />
+                    </Link>
+                    <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+                            <span className="text-text-inverse font-bold text-xs">M</span>
+                        </div>
+                        <h1 className="font-semibold text-text">Meus Dados</h1>
+                    </div>
+                </div>
+            </header>
+
+            <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+                <div className="bg-surface rounded-lg p-6 border border-border">
+                    <h2 className="text-lg font-semibold text-text mb-1">Resumo do Cadastro</h2>
+                    <p className="text-sm text-text-muted">
+                        Aqui você pode visualizar e atualizar seus dados cadastrais.
+                    </p>
+                </div>
+
+                <div className="space-y-6">
+                    <Section title="Dados Pessoais" action={
+                        <button
+                            onClick={() => handleEdit(1)}
+                            className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
+                        >
+                            <Edit2 size={12} />
+                            Editar
+                        </button>
+                    }>
+                        <Field label="CPF" value={pd.cpf} />
+                        <Field label="Nome" value={pd.name} />
+                        <Field label="Nome Social" value={pd.socialName} />
+                        <Field label="Data de Nascimento" value={pd.birthDate} />
+                        <Field label="Gênero" value={pd.gender ? getLabel(pd.gender, GENDER_OPTIONS) : undefined} />
+                        <Field label="Estado Civil" value={pd.maritalStatus ? getLabel(pd.maritalStatus, MARITAL_STATUS_OPTIONS) : undefined} />
+                        <Field label="RG" value={pd.rg} />
+                        <Field label="Órgão Expedidor" value={pd.rgIssuer} />
+                        <Field label="Data Emissão RG" value={pd.rgIssueDate} />
+                        <Field label="RNE" value={pd.rne} />
+                    </Section>
+
+                    <Section title="Naturalidade" action={
+                        <button
+                            onClick={() => handleEdit(1)}
+                            className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
+                        >
+                            <Edit2 size={12} />
+                            Editar
+                        </button>
+                    }>
+                        <Field label="UF" value={nat.birthState ? getLabel(nat.birthState, [...BRAZILIAN_STATES]) : undefined} />
+                        <Field label="Cidade" value={nat.birthCity} />
+                        <Field label="País de Origem" value={nat.originCountry ? getLabel(nat.originCountry, [...COUNTRIES]) : undefined} />
+                        <Field label="País de Residência" value={nat.residenceCountry ? getLabel(nat.residenceCountry, [...COUNTRIES]) : undefined} />
+                    </Section>
+
+                    <Section title="Endereço" action={
+                        <button
+                            onClick={() => handleEdit(2)}
+                            className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
+                        >
+                            <Edit2 size={12} />
+                            Editar
+                        </button>
+                    }>
+                        <Field label="País" value={addr.country ? getLabel(addr.country, [...COUNTRIES]) : undefined} />
+                        <Field label="CEP" value={addr.zipCode} />
+                        <Field label="Logradouro" value={`${addr.streetType || ''} ${addr.street || ''}`.trim() || undefined} />
+                        <Field label="Número" value={addr.number} />
+                        <Field label="Bairro" value={addr.neighborhood} />
+                        <Field label="Cidade" value={addr.city} />
+                        <Field label="Estado" value={addr.state ? getLabel(addr.state, [...BRAZILIAN_STATES]) : undefined} />
+                        <Field label="Complemento" value={addr.complement} />
+                    </Section>
+
+                    <Section title="Contato & Filiação" action={
+                        <button
+                            onClick={() => handleEdit(3)}
+                            className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
+                        >
+                            <Edit2 size={12} />
+                            Editar
+                        </button>
+                    }>
+                        <Field label="Telefone" value={ct.phone} />
+                        <Field label="Celular" value={ct.mobile} />
+                        <Field label="Tipo E-mail" value={ct.emailType ? getLabel(ct.emailType, [...EMAIL_TYPE_OPTIONS]) : undefined} />
+                        <Field label="E-mail" value={ct.email} />
+                        <Field label="Nome do Pai" value={ct.fatherName} />
+                        <Field label="Nome da Mãe" value={ct.motherName} />
+                        <Field label="Indicação" value={ct.referral} />
+                    </Section>
+
+                    <Section title="Dados Profissionais" action={
+                        <button
+                            onClick={() => handleEdit(3)}
+                            className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
+                        >
+                            <Edit2 size={12} />
+                            Editar
+                        </button>
+                    }>
+                        <Field label="Natureza de Ocupação" value={prof.occupationNature} />
+                        <Field label="Ocupação Principal" value={prof.mainOccupation} />
+                        <Field label="Segmento de Atividade" value={prof.activitySegment} />
+                        <Field label="Renda Declarada" value={prof.declaredIncome} />
+                    </Section>
+                </div>
+            </main>
+        </div>
+    );
+}

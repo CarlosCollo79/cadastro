@@ -11,7 +11,6 @@ import {
     CheckCircle2,
     XCircle,
     Search,
-    Eye,
     ChevronDown,
     ChevronUp,
     FileText,
@@ -32,7 +31,10 @@ export default function AdminPage() {
     const [expandedId, setExpandedId] = useState<string | null>(null);
 
     useEffect(() => {
-        setClients(getClients());
+        const timer = setTimeout(() => {
+            setClients(getClients());
+        }, 0);
+        return () => clearTimeout(timer);
     }, []);
 
     const refresh = () => setClients(getClients());

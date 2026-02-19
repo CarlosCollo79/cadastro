@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { ArrowRight, ClipboardList, Shield, Clock } from 'lucide-react';
 
 export default function HomePage() {
@@ -14,13 +15,26 @@ export default function HomePage() {
             <span className="font-semibold text-text">CâmbioPré</span>
           </div>
           <nav className="flex items-center gap-4">
-            <Link href="/admin" className="text-sm text-text-muted hover:text-text transition-colors">
-              Admin
-            </Link>
-            <Link href="/cadastro" className="btn-primary text-sm">
-              Iniciar Cadastro
-              <ArrowRight size={14} />
-            </Link>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="text-sm text-text-muted hover:text-text transition-colors">
+                  Login
+                </button>
+              </SignInButton>
+              <Link href="/cadastro" className="btn-primary text-sm">
+                Iniciar Cadastro
+                <ArrowRight size={14} />
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <Link href="/meus-dados" className="text-sm text-text-muted hover:text-text transition-colors">
+                Meus Dados
+              </Link>
+              <Link href="/admin" className="text-sm text-text-muted hover:text-text transition-colors">
+                Admin
+              </Link>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
           </nav>
         </div>
       </header>
