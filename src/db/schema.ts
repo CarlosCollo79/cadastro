@@ -3,12 +3,13 @@ import { relations } from 'drizzle-orm';
 
 export const clients = sqliteTable('clients', {
     id: text('id').primaryKey(),
-    userId: text('user_id'), // Added for isolation
     status: text('status').$type<'incomplete' | 'pending' | 'approved' | 'rejected'>().default('incomplete'),
     riskLevel: text('risk_level').$type<'baixo' | 'medio' | 'alto' | 'nao_avaliado'>().default('nao_avaliado'),
     notes: text('notes'),
 
     // Personal Data
+    userId: text('user_id'), // Added for isolation
+    tenantId: text('tenant_id').notNull(),
     cpf: text('cpf'),
     name: text('name').notNull(),
     socialName: text('social_name'),

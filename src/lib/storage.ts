@@ -4,12 +4,27 @@ import { db } from '@/db';
 import { clients, documents } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import type { Client, ClientStatus, DocumentType, EmailType, Gender, MaritalStatus, RiskLevel } from '@/types/client';
+import { auth } from '@clerk/nextjs/server';
+
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || 'default';
+
+async function checkAdminStatus() {
+    const { sessionClaims } = await auth();
+    const metadata = sessionClaims?.metadata as { admin_clients?: string[]; role?: string } | undefined;
+    const adminClients = metadata?.admin_clients || [];
+    const isGlobalAdmin = metadata?.role === 'admin';
+
+    return isGlobalAdmin || adminClients.includes(TENANT_ID);
+}
 
 export async function getClients(userId?: string): Promise<Client[]> {
     if (!userId) return [];
 
     const results = await db.query.clients.findMany({
-        where: eq(clients.userId, userId),
+        where: and(
+            eq(clients.userId, userId),
+            eq(clients.tenantId, TENANT_ID)
+        ),
         with: {
             documents: true,
         },
@@ -20,10 +35,11 @@ export async function getClients(userId?: string): Promise<Client[]> {
 }
 
 export async function getClientById(id: string, userId?: string): Promise<Client | undefined> {
+    const filters = [eq(clients.id, id), eq(clients.tenantId, TENANT_ID)];
+    if (userId) filters.push(eq(clients.userId, userId));
+
     const result = await db.query.clients.findFirst({
-        where: userId
-            ? and(eq(clients.id, id), eq(clients.userId, userId))
-            : eq(clients.id, id),
+        where: and(...filters),
         with: {
             documents: true,
         },
@@ -36,7 +52,10 @@ export async function getLatestClient(userId?: string): Promise<Client | undefin
     if (!userId) return undefined;
 
     const result = await db.query.clients.findFirst({
-        where: eq(clients.userId, userId),
+        where: and(
+            eq(clients.userId, userId),
+            eq(clients.tenantId, TENANT_ID)
+        ),
         orderBy: [desc(clients.createdAt)],
         with: {
             documents: true,
@@ -47,7 +66,14 @@ export async function getLatestClient(userId?: string): Promise<Client | undefin
 }
 
 export async function getAllClients(): Promise<(Client & { userId?: string })[]> {
+    // Server-side security check
+    const isAdmin = await checkAdminStatus();
+    if (!isAdmin) {
+        throw new Error('Unauthorized: Admin access required for this tenant');
+    }
+
     const results = await db.query.clients.findMany({
+        where: eq(clients.tenantId, TENANT_ID),
         with: {
             documents: true,
         },
@@ -68,6 +94,7 @@ export async function saveClient(client: Client, userId?: string): Promise<void>
         await tx.insert(clients).values({
             id: client.id,
             userId: userId || null,
+            tenantId: TENANT_ID,
             name: personalData.name,
             cpf: personalData.cpf,
             socialName: personalData.socialName || null,
@@ -117,6 +144,7 @@ export async function saveClient(client: Client, userId?: string): Promise<void>
             target: clients.id,
             set: {
                 userId: userId || null,
+                tenantId: TENANT_ID,
                 name: personalData.name,
                 cpf: personalData.cpf,
                 socialName: personalData.socialName || null,
@@ -178,12 +206,19 @@ export async function saveClient(client: Client, userId?: string): Promise<void>
 }
 
 export async function updateClientStatus(id: string, status: ClientStatus, userId?: string): Promise<void> {
+    // Server-side security check for admin
+    const isAdmin = await checkAdminStatus();
+    if (!isAdmin) {
+        throw new Error('Unauthorized');
+    }
+
     await db.update(clients)
         .set({ status, updatedAt: new Date().toISOString() })
-        .where(userId
-            ? and(eq(clients.id, id), eq(clients.userId, userId))
-            : eq(clients.id, id)
-        );
+        .where(and(
+            eq(clients.id, id),
+            eq(clients.tenantId, TENANT_ID),
+            userId ? eq(clients.userId, userId) : eq(clients.id, id) // dummy match if no userId
+        ));
 }
 
 export async function generateId(): Promise<string> {

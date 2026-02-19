@@ -3,10 +3,25 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 const isProtectedRoute = createRouteMatcher(['/admin(.*)', '/cadastro(.*)', '/meus-dados(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
-    console.log('Middleware running for:', req.url);
+    const { sessionClaims } = await auth();
+    const url = new URL(req.url);
+
     if (isProtectedRoute(req)) {
-        console.log('Protected route detected');
         await auth.protect();
+    }
+
+    // Admin protection (authorization)
+    if (url.pathname.startsWith('/admin')) {
+        const tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default';
+        const metadata = sessionClaims?.metadata as { admin_clients?: string[]; role?: string } | undefined;
+        const adminClients = metadata?.admin_clients || [];
+        const isGlobalAdmin = metadata?.role === 'admin';
+        const isTenantAdmin = adminClients.includes(tenantId);
+
+        if (!isGlobalAdmin && !isTenantAdmin) {
+            // Redirect unauthorized users away from admin
+            return Response.redirect(new URL('/', req.url));
+        }
     }
 });
 

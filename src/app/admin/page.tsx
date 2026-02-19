@@ -19,6 +19,7 @@ import {
     List
 } from 'lucide-react';
 import { Dashboard } from '@/components/admin/Dashboard';
+import { useUser } from '@clerk/nextjs';
 
 const STATUS_CONFIG: Record<ClientStatus, { label: string; className: string }> = {
     pending: { label: 'Pendente', className: 'badge-pending' },
@@ -28,25 +29,34 @@ const STATUS_CONFIG: Record<ClientStatus, { label: string; className: string }> 
 };
 
 export default function AdminPage() {
+    const { user, isLoaded: isUserLoaded } = useUser();
     const [clients, setClients] = useState<(Client & { userId?: string })[]>([]);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<ClientStatus | 'all'>('all');
     const [expandedId, setExpandedId] = useState<string | null>(null);
-    const [isAuthorized, setIsAuthorized] = useState(false);
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [view, setView] = useState<'list' | 'dashboard'>('list');
 
     useEffect(() => {
-        if (!isAuthorized) return;
+        if (!isUserLoaded) return;
 
         async function fetchClients() {
-            const data = await getAllClients();
-            setClients(data);
+            try {
+                setLoading(true);
+                const data = await getAllClients();
+                setClients(data);
+                setError(null);
+            } catch (err: any) {
+                console.error('Failed to load clients:', err);
+                setError(err.message || 'Erro ao carregar dados. Verifique suas permissões.');
+            } finally {
+                setLoading(false);
+            }
         }
 
         fetchClients();
-    }, [isAuthorized]);
+    }, [isUserLoaded]);
 
     const refresh = async () => {
         const data = await getAllClients();
@@ -58,44 +68,30 @@ export default function AdminPage() {
         refresh();
     };
 
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (password === 'admcad') {
-            setIsAuthorized(true);
-            setError('');
-        } else {
-            setError('Senha incorreta');
-        }
-    };
+    if (!isUserLoaded || loading) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-text-muted animate-pulse">Carregando painel...</p>
+                </div>
+            </div>
+        );
+    }
 
-    if (!isAuthorized) {
+    if (error) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center p-4">
-                <div className="card max-w-sm w-full space-y-6 p-8">
-                    <div className="text-center space-y-2">
-                        <div className="w-12 h-12 rounded-xl bg-primary mx-auto flex items-center justify-center mb-4">
-                            <span className="text-text-inverse font-bold text-xl">A</span>
-                        </div>
-                        <h1 className="text-2xl font-bold text-text">Acesso Restrito</h1>
-                        <p className="text-sm text-text-muted">Digite a senha de administrador para acessar o painel.</p>
+                <div className="card max-w-sm w-full space-y-4 p-8 text-center">
+                    <div className="w-12 h-12 rounded-xl bg-danger-bg mx-auto flex items-center justify-center">
+                        <XCircle size={24} className="text-danger" />
                     </div>
-
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="space-y-2">
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="form-input text-center text-lg tracking-widest"
-                                placeholder="••••••"
-                                autoFocus
-                            />
-                            {error && <p className="text-xs text-danger text-center">{error}</p>}
-                        </div>
-                        <button type="submit" className="btn-primary w-full py-3">
-                            Acessar Painel
-                        </button>
-                    </form>
+                    <h1 className="text-xl font-bold text-text">Acesso Negado</h1>
+                    <p className="text-sm text-text-muted">{error}</p>
+                    <Link href="/" className="btn-secondary w-full py-2 flex items-center justify-center gap-2">
+                        <ArrowLeft size={16} />
+                        Voltar para Home
+                    </Link>
                 </div>
             </div>
         );
