@@ -4,8 +4,8 @@ import { ptBR } from '@clerk/localizations'
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Pré-Cadastro | Corretora de Câmbio",
-  description: "Faça seu pré-cadastro para agilizar sua operação de câmbio",
+  title: "Onboarding Digital",
+  description: "Faça seu cadastro para agilizar sua operação",
 };
 
 export default function RootLayout({

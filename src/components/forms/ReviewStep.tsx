@@ -10,8 +10,10 @@ import {
     BRAZILIAN_STATES,
     COUNTRIES,
 } from '@/lib/constants';
-import { ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Send, CheckCircle2, User } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 
 interface Props {
     onBack: () => void;
@@ -26,10 +28,11 @@ import { Section, Field } from '@/components/ui/DataDisplay';
 export function ReviewStep({ onBack }: Props) {
     const { state, updateNotes, resetForm } = useFormStore();
     const [submitted, setSubmitted] = useState(false);
+    const { user } = useUser();
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const client: Client = {
-            id: generateId(),
+            id: state.id || await generateId(),
             personalData: state.personalData as Client['personalData'],
             nationality: state.nationality as Client['nationality'],
             address: state.address as Client['address'],
@@ -43,7 +46,7 @@ export function ReviewStep({ onBack }: Props) {
             updatedAt: new Date().toISOString(),
         };
 
-        saveClient(client);
+        await saveClient(client, user?.id);
         setSubmitted(true);
     };
 
@@ -56,16 +59,16 @@ export function ReviewStep({ onBack }: Props) {
                     Seu pré-cadastro foi recebido com sucesso. A corretora irá analisar seus dados
                     e você será notificado sobre o resultado.
                 </p>
-                <button
-                    type="button"
+                <Link
+                    href="/meus-dados"
+                    className="btn-primary"
                     onClick={() => {
                         resetForm();
-                        setSubmitted(false);
                     }}
-                    className="btn-secondary"
                 >
-                    Fazer Novo Cadastro
-                </button>
+                    <User size={18} />
+                    Ver Meus Dados
+                </Link>
             </div>
         );
     }
@@ -88,9 +91,9 @@ export function ReviewStep({ onBack }: Props) {
                 <Field label="Data de Nascimento" value={pd.birthDate} />
                 <Field label="Gênero" value={pd.gender ? getLabel(pd.gender, GENDER_OPTIONS) : undefined} />
                 <Field label="Estado Civil" value={pd.maritalStatus ? getLabel(pd.maritalStatus, MARITAL_STATUS_OPTIONS) : undefined} />
-                <Field label="RG" value={pd.rg} />
+                <Field label="RG / CNH / CIN" value={pd.rg} />
                 <Field label="Órgão Expedidor" value={pd.rgIssuer} />
-                <Field label="Data Emissão RG" value={pd.rgIssueDate} />
+                <Field label="Data Emissão Documento" value={pd.rgIssueDate} />
                 <Field label="RNE" value={pd.rne} />
             </Section>
 

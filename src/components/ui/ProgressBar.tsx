@@ -10,8 +10,8 @@ interface ProgressBarProps {
 
 export function ProgressBar({ currentStep, onStepClick }: ProgressBarProps) {
     return (
-        <nav className="w-full overflow-x-auto pb-2">
-            <ol className="flex items-center min-w-max gap-0">
+        <nav className="w-full overflow-x-auto pb-4 no-scrollbar">
+            <ol className="flex items-center justify-center min-w-max sm:min-w-0 gap-0 px-2">
                 {WIZARD_STEPS.map((step, index) => {
                     const isCompleted = currentStep > step.id;
                     const isCurrent = currentStep === step.id;
@@ -23,7 +23,7 @@ export function ProgressBar({ currentStep, onStepClick }: ProgressBarProps) {
                                 type="button"
                                 onClick={() => isClickable && onStepClick(step.id)}
                                 disabled={!isClickable}
-                                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all text-sm
+                                className={`flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-3 py-2 rounded-md transition-all text-sm
                   ${isCurrent ? 'text-accent font-semibold' : ''}
                   ${isCompleted ? 'text-success cursor-pointer hover:bg-success-bg' : ''}
                   ${!isCurrent && !isCompleted ? 'text-text-light' : ''}
@@ -43,7 +43,7 @@ export function ProgressBar({ currentStep, onStepClick }: ProgressBarProps) {
                             </button>
                             {index < WIZARD_STEPS.length - 1 && (
                                 <div
-                                    className={`w-6 lg:w-10 h-px mx-1 transition-colors ${isCompleted ? 'bg-success' : 'bg-border'
+                                    className={`w-3 sm:w-6 lg:w-10 h-px transition-colors ${isCompleted ? 'bg-success' : 'bg-border'
                                         }`}
                                 />
                             )}

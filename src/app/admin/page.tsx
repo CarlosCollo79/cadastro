@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getClients, updateClientStatus } from '@/lib/storage';
+import { getAllClients, updateClientStatus } from '@/lib/storage';
 import type { Client, ClientStatus } from '@/types/client';
 import Link from 'next/link';
 import {
@@ -25,24 +25,77 @@ const STATUS_CONFIG: Record<ClientStatus, { label: string; className: string }> 
 };
 
 export default function AdminPage() {
-    const [clients, setClients] = useState<Client[]>([]);
+    const [clients, setClients] = useState<(Client & { userId?: string })[]>([]);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<ClientStatus | 'all'>('all');
     const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [isAuthorized, setIsAuthorized] = useState(false);
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setClients(getClients());
-        }, 0);
-        return () => clearTimeout(timer);
-    }, []);
+        if (!isAuthorized) return;
 
-    const refresh = () => setClients(getClients());
+        async function fetchClients() {
+            const data = await getAllClients();
+            setClients(data);
+        }
 
-    const handleStatusChange = (id: string, status: ClientStatus) => {
-        updateClientStatus(id, status);
+        fetchClients();
+    }, [isAuthorized]);
+
+    const refresh = async () => {
+        const data = await getAllClients();
+        setClients(data);
+    };
+
+    const handleStatusChange = async (id: string, status: ClientStatus, userId?: string) => {
+        await updateClientStatus(id, status, userId);
         refresh();
     };
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (password === 'admcad') {
+            setIsAuthorized(true);
+            setError('');
+        } else {
+            setError('Senha incorreta');
+        }
+    };
+
+    if (!isAuthorized) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center p-4">
+                <div className="card max-w-sm w-full space-y-6 p-8">
+                    <div className="text-center space-y-2">
+                        <div className="w-12 h-12 rounded-xl bg-primary mx-auto flex items-center justify-center mb-4">
+                            <span className="text-text-inverse font-bold text-xl">A</span>
+                        </div>
+                        <h1 className="text-2xl font-bold text-text">Acesso Restrito</h1>
+                        <p className="text-sm text-text-muted">Digite a senha de administrador para acessar o painel.</p>
+                    </div>
+
+                    <form onSubmit={handleLogin} className="space-y-4">
+                        <div className="space-y-2">
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="form-input text-center text-lg tracking-widest"
+                                placeholder="••••••"
+                                autoFocus
+                            />
+                            {error && <p className="text-xs text-danger text-center">{error}</p>}
+                        </div>
+                        <button type="submit" className="btn-primary w-full py-3">
+                            Acessar Painel
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
 
     const filtered = clients.filter((c) => {
         const matchesSearch =
@@ -261,7 +314,7 @@ export default function AdminPage() {
                                         <div className="flex gap-2 pt-2 border-t border-border">
                                             {client.status !== 'approved' && (
                                                 <button
-                                                    onClick={() => handleStatusChange(client.id, 'approved')}
+                                                    onClick={() => handleStatusChange(client.id, 'approved', client.userId)}
                                                     className="btn-primary text-sm py-2"
                                                 >
                                                     <CheckCircle2 size={14} />
@@ -270,7 +323,7 @@ export default function AdminPage() {
                                             )}
                                             {client.status !== 'rejected' && (
                                                 <button
-                                                    onClick={() => handleStatusChange(client.id, 'rejected')}
+                                                    onClick={() => handleStatusChange(client.id, 'rejected', client.userId)}
                                                     className="btn-danger text-sm py-2"
                                                 >
                                                     <XCircle size={14} />
@@ -279,7 +332,7 @@ export default function AdminPage() {
                                             )}
                                             {client.status !== 'pending' && (
                                                 <button
-                                                    onClick={() => handleStatusChange(client.id, 'pending')}
+                                                    onClick={() => handleStatusChange(client.id, 'pending', client.userId)}
                                                     className="btn-secondary text-sm py-2"
                                                 >
                                                     <Clock size={14} />

@@ -9,11 +9,13 @@ import {
     BRAZILIAN_STATES,
     COUNTRIES,
 } from '@/lib/constants';
-import { Edit2, ArrowLeft } from 'lucide-react';
+import { Edit2, ArrowLeft, FileText, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 import type { Client } from '@/types/client';
+import { saveClient } from '@/lib/storage';
 
 function getLabel(value: string, options: ReadonlyArray<{ value: string; label: string }>) {
     return options.find((o) => o.value === value)?.label ?? value;
@@ -22,13 +24,44 @@ function getLabel(value: string, options: ReadonlyArray<{ value: string; label: 
 export default function MyDataPage() {
     const [client, setClient] = useState<Client | null>(null);
     const router = useRouter();
+    const { user, isLoaded } = useUser();
 
     useEffect(() => {
-        const stored = getLatestClient();
-        if (stored) {
-            setTimeout(() => setClient(stored), 0);
+        if (!isLoaded) return;
+
+        async function fetchClient() {
+            const stored = await getLatestClient(user?.id);
+            if (stored) {
+                setClient(stored);
+            } else {
+                setClient(null);
+            }
         }
-    }, []);
+
+        fetchClient();
+    }, [user?.id, isLoaded]);
+
+    const handleDeleteDocument = async (docId: string) => {
+        if (!client || !user?.id) return;
+
+        const updatedDocuments = client.documents.filter(d => d.id !== docId);
+        const updatedClient = {
+            ...client,
+            documents: updatedDocuments,
+            updatedAt: new Date().toISOString()
+        };
+
+        await saveClient(updatedClient, user.id);
+        setClient(updatedClient);
+    };
+
+    if (!isLoaded) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+            </div>
+        );
+    }
 
     if (!client) {
         return (
@@ -64,7 +97,7 @@ export default function MyDataPage() {
                         <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
                             <span className="text-text-inverse font-bold text-xs">M</span>
                         </div>
-                        <h1 className="font-semibold text-text">Meus Dados</h1>
+                        <h1 className="font-semibold text-text">Onboarding Digital</h1>
                     </div>
                 </div>
             </header>
@@ -93,9 +126,9 @@ export default function MyDataPage() {
                         <Field label="Data de Nascimento" value={pd.birthDate} />
                         <Field label="Gênero" value={pd.gender ? getLabel(pd.gender, GENDER_OPTIONS) : undefined} />
                         <Field label="Estado Civil" value={pd.maritalStatus ? getLabel(pd.maritalStatus, MARITAL_STATUS_OPTIONS) : undefined} />
-                        <Field label="RG" value={pd.rg} />
+                        <Field label="RG / CNH / CIN" value={pd.rg} />
                         <Field label="Órgão Expedidor" value={pd.rgIssuer} />
-                        <Field label="Data Emissão RG" value={pd.rgIssueDate} />
+                        <Field label="Data Emissão Documento" value={pd.rgIssueDate} />
                         <Field label="RNE" value={pd.rne} />
                     </Section>
 
@@ -165,8 +198,71 @@ export default function MyDataPage() {
                         <Field label="Segmento de Atividade" value={prof.activitySegment} />
                         <Field label="Renda Declarada" value={prof.declaredIncome} />
                     </Section>
+
+                    <Section title="Documentos" action={
+                        <button
+                            onClick={() => handleEdit(4)}
+                            className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
+                        >
+                            <Plus size={12} />
+                            Adicionar
+                        </button>
+                    }>
+                        {client.documents && client.documents.length > 0 ? (
+                            client.documents.map((doc) => (
+                                <div key={doc.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card/50 transition-colors hover:bg-surface group">
+                                    {doc.fileUrl && doc.fileUrl.startsWith('data:image') ? (
+                                        <div className="relative w-10 h-10 shrink-0">
+                                            <img
+                                                src={doc.fileUrl}
+                                                alt={doc.fileName}
+                                                className="w-full h-full rounded object-cover border border-border"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="w-10 h-10 rounded bg-surface flex items-center justify-center border border-border shrink-0">
+                                            <FileText size={18} className="text-danger" />
+                                        </div>
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium truncate leading-tight mb-1">{doc.fileName}</p>
+                                        <p className="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
+                                            {doc.type.replace(/_/g, ' ')}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <a
+                                            href={doc.fileUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-1.5 rounded-md hover:bg-info-bg text-text-light hover:text-info transition-colors"
+                                            title="Visualizar"
+                                        >
+                                            <Edit2 size={14} />
+                                        </a>
+                                        <button
+                                            onClick={() => {
+                                                if (confirm('Tem certeza que deseja excluir este documento?')) {
+                                                    handleDeleteDocument(doc.id);
+                                                }
+                                            }}
+                                            className="p-1.5 rounded-md hover:bg-danger-bg text-text-light hover:text-danger transition-colors"
+                                            title="Excluir"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="col-span-full text-sm text-text-muted py-2">
+                                Nenhum documento enviado.
+                            </p>
+                        )}
+                    </Section>
                 </div>
             </main>
         </div>
     );
 }
+

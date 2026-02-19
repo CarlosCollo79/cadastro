@@ -11,6 +11,7 @@ import type {
 } from '@/types/client';
 
 interface FormState {
+    id?: string;
     currentStep: number;
     personalData: Partial<ClientPersonalData>;
     nationality: Partial<ClientNationality>;
@@ -24,6 +25,7 @@ interface FormState {
 interface FormContextType {
     state: FormState;
     setStep: (step: number) => void;
+    updateId: (id: string) => void;
     updatePersonalData: (data: Partial<ClientPersonalData>) => void;
     updateNationality: (data: Partial<ClientNationality>) => void;
     updateAddress: (data: Partial<ClientAddress>) => void;
@@ -37,6 +39,7 @@ interface FormContextType {
 }
 
 const initialState: FormState = {
+    id: undefined,
     currentStep: 1,
     personalData: {},
     nationality: { originCountry: 'BR', residenceCountry: 'BR' },
@@ -54,6 +57,10 @@ export function FormProvider({ children }: { children: ReactNode }) {
 
     const setStep = useCallback((step: number) => {
         setState((prev) => ({ ...prev, currentStep: step }));
+    }, []);
+
+    const updateId = useCallback((id: string) => {
+        setState((prev) => ({ ...prev, id }));
     }, []);
 
     const updatePersonalData = useCallback((data: Partial<ClientPersonalData>) => {
@@ -96,7 +103,11 @@ export function FormProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const loadFormData = useCallback((data: Partial<FormState>) => {
-        setState((prev) => ({ ...prev, ...data }));
+        setState((prev) => ({
+            ...prev,
+            ...data,
+            documents: data.documents || prev.documents || [],
+        }));
     }, []);
 
     return (
@@ -104,6 +115,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
             value={{
                 state,
                 setStep,
+                updateId,
                 updatePersonalData,
                 updateNationality,
                 updateAddress,
@@ -120,6 +132,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
         </FormContext.Provider>
     );
 }
+
 
 export function useFormStore() {
     const ctx = useContext(FormContext);

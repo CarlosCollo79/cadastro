@@ -31,7 +31,7 @@ export interface ClientAddress {
     streetType: string;
     street: string;
     number: string;
-    neighborhoodType: string;
+    neighborhoodType?: string;
     neighborhood: string;
     city: string;
     state: string;

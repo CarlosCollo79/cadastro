@@ -22,7 +22,7 @@ export function PersonalDataStep({ onNext }: Props) {
         formState: { errors },
     } = useForm<PersonalDataInput>({
         resolver: zodResolver(personalDataSchema),
-        defaultValues: {
+        values: {
             ...(state.personalData as PersonalDataInput),
             birthState: state.nationality.birthState || '',
             birthCity: state.nationality.birthCity || '',
@@ -115,10 +115,10 @@ export function PersonalDataStep({ onNext }: Props) {
                         {errors.maritalStatus && <p className="form-error">{errors.maritalStatus.message}</p>}
                     </div>
 
-                    {/* RG */}
+                    {/* RG / CNH / CIN */}
                     <div>
-                        <label className="form-label">RG *</label>
-                        <input {...register('rg')} className="form-input" placeholder="Número do RG" />
+                        <label className="form-label">RG / CNH / CIN *</label>
+                        <input {...register('rg')} className="form-input" placeholder="Número do documento" />
                         {errors.rg && <p className="form-error">{errors.rg.message}</p>}
                     </div>
 
@@ -129,9 +129,9 @@ export function PersonalDataStep({ onNext }: Props) {
                         {errors.rgIssuer && <p className="form-error">{errors.rgIssuer.message}</p>}
                     </div>
 
-                    {/* Data Emissão RG */}
+                    {/* Data Emissão Documento */}
                     <div>
-                        <label className="form-label">Data de Emissão do RG *</label>
+                        <label className="form-label">Data de Emissão do Documento *</label>
                         <input
                             {...register('rgIssueDate')}
                             className="form-input"

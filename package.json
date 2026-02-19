@@ -6,12 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@clerk/localizations": "^3.36.0",
     "@clerk/nextjs": "^6.38.0",
     "@hookform/resolvers": "^5.2.2",
+    "@libsql/client": "^0.17.0",
+    "drizzle-orm": "^0.45.1",
     "lucide-react": "^0.574.0",
     "next": "16.1.6",
     "next-intl": "^4.8.3",
@@ -22,10 +27,13 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.9",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",

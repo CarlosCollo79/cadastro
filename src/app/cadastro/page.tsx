@@ -4,8 +4,36 @@ import { FormProvider } from '@/lib/form-store';
 import { StepWizard } from '@/components/forms/StepWizard';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
+import { getLatestClient } from '@/lib/storage';
 
 export default function CadastroPage() {
+    const { user, isSignedIn, isLoaded } = useUser();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        async function checkExistingRegistration() {
+            if (!isLoaded || !isSignedIn) return;
+
+            const mode = searchParams.get('mode');
+            const latestClient = await getLatestClient(user?.id);
+            const hasRegistration = !!latestClient;
+
+            if (hasRegistration && mode !== 'edit') {
+                router.replace('/meus-dados');
+            }
+        }
+
+        checkExistingRegistration();
+    }, [isSignedIn, isLoaded, user?.id, router, searchParams]);
+
+    // Avoid flash of content while checking
+    if (!isLoaded) return null;
+
+
     return (
         <div className="min-h-screen bg-background">
             {/* Header */}
@@ -18,7 +46,7 @@ export default function CadastroPage() {
                         <div className="w-7 h-7 rounded-md bg-accent flex items-center justify-center">
                             <span className="text-text-inverse font-bold text-xs">C</span>
                         </div>
-                        <span className="font-semibold text-text text-sm">Pré-Cadastro</span>
+                        <span className="font-semibold text-text text-sm">Onboarding Digital</span>
                     </div>
                 </div>
             </header>
@@ -32,3 +60,4 @@ export default function CadastroPage() {
         </div>
     );
 }
+

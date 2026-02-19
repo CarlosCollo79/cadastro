@@ -9,8 +9,9 @@ import { DocumentsStep } from './DocumentsStep';
 import { ReviewStep } from './ReviewStep';
 import { WIZARD_STEPS } from '@/types/client';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { getLatestClient } from '@/lib/storage';
+import { useUser } from '@clerk/nextjs';
 
 export function StepWizard() {
     const { state, setStep, loadFormData } = useFormStore();
@@ -18,22 +19,25 @@ export function StepWizard() {
     const searchParams = useSearchParams();
     const hasLoaded = useRef(false);
 
+    const { isLoaded: authLoaded, user } = useUser();
+
     useEffect(() => {
-        if (hasLoaded.current) return;
+        if (hasLoaded.current || !authLoaded) return;
 
         const mode = searchParams.get('mode');
         const stepParam = searchParams.get('step');
 
         if (mode === 'edit') {
-            const stored = getLatestClient();
+            const stored = getLatestClient(user?.id);
             if (stored) {
                 loadFormData({
+                    id: stored.id,
                     personalData: stored.personalData,
                     nationality: stored.nationality,
                     address: stored.address,
                     contact: stored.contact,
                     professional: stored.professional,
-                    documents: stored.documents,
+                    documents: stored.documents || [],
                     notes: stored.notes,
                 });
             }
@@ -46,7 +50,7 @@ export function StepWizard() {
             }
         }
         hasLoaded.current = true;
-    }, [searchParams, loadFormData, setStep]);
+    }, [searchParams, loadFormData, setStep, authLoaded, user?.id]);
 
     const currentStepInfo = WIZARD_STEPS.find((s) => s.id === currentStep);
 

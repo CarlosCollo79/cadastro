@@ -1,8 +1,33 @@
+'use client';
+
 import Link from 'next/link';
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
-import { ArrowRight, ClipboardList, Shield, Clock } from 'lucide-react';
+import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
+import { ArrowRight, ClipboardList, Shield, Clock, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { getLatestClient } from '@/lib/storage';
 
 export default function HomePage() {
+  const [hasRegistration, setHasRegistration] = useState(false);
+  const { isSignedIn, user, isLoaded } = useUser();
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    // We use a small delay to avoid "cascading renders" lint error
+    // while ensuring we only check localStorage on the client side.
+    const timer = setTimeout(() => {
+      if (getLatestClient(user?.id)) {
+        setHasRegistration(true);
+      } else {
+        setHasRegistration(false);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [user?.id, isLoaded]);
+
+  // Condition to show "Meus Dados" instead of registration
+  const showMyData = isSignedIn && hasRegistration;
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -10,9 +35,9 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-              <span className="text-text-inverse font-bold text-sm">C</span>
+              <span className="text-text-inverse font-bold text-sm">O</span>
             </div>
-            <span className="font-semibold text-text">CâmbioPré</span>
+            <span className="font-semibold text-text">Onboarding Digital</span>
           </div>
           <nav className="flex items-center gap-4">
             <SignedOut>
@@ -27,9 +52,15 @@ export default function HomePage() {
               </Link>
             </SignedOut>
             <SignedIn>
-              <Link href="/meus-dados" className="text-sm text-text-muted hover:text-text transition-colors">
-                Meus Dados
-              </Link>
+              {showMyData ? (
+                <Link href="/meus-dados" className="text-sm text-text-muted hover:text-text transition-colors">
+                  Meus Dados
+                </Link>
+              ) : (
+                <Link href="/cadastro" className="text-sm text-text-muted hover:text-text transition-colors">
+                  Iniciar Cadastro
+                </Link>
+              )}
               <Link href="/admin" className="text-sm text-text-muted hover:text-text transition-colors">
                 Admin
               </Link>
@@ -44,18 +75,26 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20 w-full">
           <div className="max-w-2xl">
             <h1 className="text-4xl sm:text-5xl font-bold text-text leading-tight mb-6">
-              Pré-Cadastro para
-              <span className="block text-accent">Operações de Câmbio</span>
+              Modernize seu
+              <span className="block text-accent">Processo de Onboarding</span>
             </h1>
             <p className="text-lg text-text-muted leading-relaxed mb-10 max-w-lg">
-              Agilize sua compra de moeda estrangeira fazendo o cadastro antecipado.
-              Seus dados serão analisados pela corretora antes da sua chegada.
+              Agilize sua entrada fazendo o cadastro antecipado.
+              Seus dados serão analisados com segurança e rapidez.
             </p>
-            <Link href="/cadastro" className="btn-primary text-base px-6 py-3">
-              Começar Pré-Cadastro
-              <ArrowRight size={18} />
-            </Link>
+            {showMyData ? (
+              <Link href="/meus-dados" className="btn-primary text-base px-6 py-3">
+                Ver Meus Dados
+                <User size={18} />
+              </Link>
+            ) : (
+              <Link href="/cadastro" className="btn-primary text-base px-6 py-3">
+                Iniciar Cadastro
+                <ArrowRight size={18} />
+              </Link>
+            )}
           </div>
+
 
           {/* Feature cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-20">
@@ -70,14 +109,14 @@ export default function HomePage() {
               <Shield className="text-accent mb-3" size={24} />
               <h3 className="font-semibold text-text mb-1.5">Dados Seguros</h3>
               <p className="text-sm text-text-muted">
-                Suas informações são protegidas e acessíveis apenas pela corretora.
+                Suas informações são protegidas e criptografadas para sua segurança.
               </p>
             </div>
             <div className="card group hover:border-accent/30 transition-colors">
               <Clock className="text-accent mb-3" size={24} />
-              <h3 className="font-semibold text-text mb-1.5">Processo Agilizado</h3>
+              <h3 className="font-semibold text-text mb-1.5">Processo Digital</h3>
               <p className="text-sm text-text-muted">
-                Ao chegar na corretora, seus dados já estarão pré-aprovados.
+                Evite filas e burocracia com um fluxo 100% digital e agilizado.
               </p>
             </div>
           </div>
@@ -87,9 +126,10 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-border py-6">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center text-sm text-text-light">
-          © {new Date().getFullYear()} CâmbioPré — Pré-cadastro para corretoras de câmbio
+          © {new Date().getFullYear()} Onboarding Digital — Sistema de cadastro simplificado
         </div>
       </footer>
     </div>
   );
 }
+

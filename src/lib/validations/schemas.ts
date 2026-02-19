@@ -37,7 +37,7 @@ export const addressSchema = z.object({
     streetType: z.string().min(1, 'Tipo de logradouro é obrigatório'),
     street: z.string().min(1, 'Logradouro é obrigatório'),
     number: z.string().min(1, 'Número é obrigatório'),
-    neighborhoodType: z.string().optional().default(''),
+    neighborhoodType: z.string().optional(),
     neighborhood: z.string().min(1, 'Bairro é obrigatório'),
     city: z.string().min(1, 'Cidade é obrigatória'),
     state: z.string().min(1, 'Estado é obrigatório'),

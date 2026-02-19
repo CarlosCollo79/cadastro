@@ -27,7 +27,7 @@ export function AddressStep({ onNext, onBack }: Props) {
         formState: { errors },
     } = useForm<AddressInput>({
         resolver: zodResolver(addressSchema),
-        defaultValues: state.address as AddressInput,
+        values: state.address as AddressInput,
     });
 
     const handleCepBlur = async () => {

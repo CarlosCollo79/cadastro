@@ -23,7 +23,7 @@ export function ContactStep({ onNext, onBack }: Props) {
         formState: { errors },
     } = useForm<ContactInput>({
         resolver: zodResolver(contactSchema),
-        defaultValues: {
+        values: {
             ...(state.contact as ContactInput),
             occupationNature: state.professional.occupationNature || '',
             mainOccupation: state.professional.mainOccupation || '',

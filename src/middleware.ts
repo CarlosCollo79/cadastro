@@ -3,9 +3,10 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 const isProtectedRoute = createRouteMatcher(['/admin(.*)', '/cadastro(.*)', '/meus-dados(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
+    console.log('Middleware running for:', req.url);
     if (isProtectedRoute(req)) {
-        const { userId, redirectToSignIn } = await auth()
-        if (!userId) return redirectToSignIn()
+        console.log('Protected route detected');
+        await auth.protect();
     }
 });
 
