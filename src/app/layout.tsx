@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from '@clerk/nextjs'
 import { ptBR } from '@clerk/localizations'
+import { Inter } from 'next/font/google'
 import "./globals.css";
+
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata: Metadata = {
   title: "Onboarding Digital",
   description: "Faça seu cadastro para agilizar sua operação",
+  openGraph: {
+    title: "Onboarding Digital",
+    description: "Faça seu cadastro para agilizar sua operação",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -16,15 +24,7 @@ export default function RootLayout({
   return (
     <ClerkProvider localization={ptBR}>
       <html lang="pt-BR">
-        <head>
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-          <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
-          />
-        </head>
-        <body className="min-h-screen bg-background antialiased">
+        <body className={`min-h-screen bg-background antialiased ${inter.className}`}>
           {children}
         </body>
       </html>

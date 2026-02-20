@@ -13,20 +13,32 @@ export default function HomePage() {
   useEffect(() => {
     if (!isLoaded) return;
 
-    // We use a small delay to avoid "cascading renders" lint error
-    // while ensuring we only check localStorage on the client side.
-    const timer = setTimeout(() => {
-      if (getLatestClient(user?.id)) {
-        setHasRegistration(true);
-      } else {
-        setHasRegistration(false);
+    let isMounted = true;
+    async function checkRegistration() {
+      try {
+        const client = await getLatestClient(user?.id);
+        if (isMounted) {
+          setHasRegistration(!!client);
+        }
+      } catch (err) {
+        console.error("Failed to check registration:", err);
       }
-    }, 0);
-    return () => clearTimeout(timer);
+    }
+
+    checkRegistration();
+
+    return () => {
+      isMounted = false;
+    };
   }, [user?.id, isLoaded]);
 
   // Condition to show "Meus Dados" instead of registration
   const showMyData = isSignedIn && hasRegistration;
+
+  // Check if user has admin access for this tenant or is a global admin
+  const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || 'default';
+  const isAdmin = user?.publicMetadata?.role === 'admin' ||
+    (user?.publicMetadata?.admin_clients as string[])?.includes(TENANT_ID);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -61,9 +73,11 @@ export default function HomePage() {
                   Iniciar Cadastro
                 </Link>
               )}
-              <Link href="/admin" className="text-sm text-text-muted hover:text-text transition-colors">
-                Admin
-              </Link>
+              {isAdmin && (
+                <Link href="/admin" className="text-sm text-text-muted hover:text-text transition-colors">
+                  Admin
+                </Link>
+              )}
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
           </nav>

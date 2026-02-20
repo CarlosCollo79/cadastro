@@ -116,6 +116,7 @@ export function DocumentsStep({ onNext, onBack }: Props) {
                                     <p className="text-xs text-text-light">{getTypeLabel(doc.type)}</p>
                                 </div>
                                 {doc.fileUrl.startsWith('data:image') && (
+                                    // eslint-disable-next-line @next/next/no-img-element
                                     <img
                                         src={doc.fileUrl}
                                         alt={doc.fileName}

@@ -29,10 +29,10 @@ const STATUS_CONFIG: Record<ClientStatus, { label: string; className: string }> 
 };
 
 export default function AdminPage() {
-    const { user, isLoaded: isUserLoaded } = useUser();
+    const { isLoaded: isUserLoaded } = useUser();
     const [clients, setClients] = useState<(Client & { userId?: string })[]>([]);
     const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState<ClientStatus | 'all'>('all');
+    const [statusFilter, setStatusFilter] = useState<ClientStatus | 'all'>('pending');
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -47,9 +47,9 @@ export default function AdminPage() {
                 const data = await getAllClients();
                 setClients(data);
                 setError(null);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error('Failed to load clients:', err);
-                setError(err.message || 'Erro ao carregar dados. Verifique suas permissões.');
+                setError(err instanceof Error ? err.message : 'Erro ao carregar dados. Verifique suas permissões.');
             } finally {
                 setLoading(false);
             }
@@ -159,7 +159,10 @@ export default function AdminPage() {
             <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
                 {/* KPIs */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="card flex items-center gap-3">
+                    <button
+                        onClick={() => { setStatusFilter('all'); setView('list'); }}
+                        className={`card flex items-center gap-3 text-left transition-all hover:scale-[1.02] cursor-pointer ${statusFilter === 'all' ? 'ring-2 ring-primary !bg-info-bg' : ''}`}
+                    >
                         <div className="p-2 rounded-lg bg-info-bg">
                             <Users size={20} className="text-info" />
                         </div>
@@ -167,8 +170,11 @@ export default function AdminPage() {
                             <p className="text-2xl font-bold text-text">{counts.total}</p>
                             <p className="text-xs text-text-muted">Total</p>
                         </div>
-                    </div>
-                    <div className="card flex items-center gap-3">
+                    </button>
+                    <button
+                        onClick={() => { setStatusFilter('pending'); setView('list'); }}
+                        className={`card flex items-center gap-3 text-left transition-all hover:scale-[1.02] cursor-pointer ${statusFilter === 'pending' ? 'ring-2 ring-warning !bg-warning-bg' : ''}`}
+                    >
                         <div className="p-2 rounded-lg bg-warning-bg">
                             <Clock size={20} className="text-warning" />
                         </div>
@@ -176,8 +182,11 @@ export default function AdminPage() {
                             <p className="text-2xl font-bold text-text">{counts.pending}</p>
                             <p className="text-xs text-text-muted">Pendentes</p>
                         </div>
-                    </div>
-                    <div className="card flex items-center gap-3">
+                    </button>
+                    <button
+                        onClick={() => { setStatusFilter('approved'); setView('list'); }}
+                        className={`card flex items-center gap-3 text-left transition-all hover:scale-[1.02] cursor-pointer ${statusFilter === 'approved' ? 'ring-2 ring-success !bg-success-bg' : ''}`}
+                    >
                         <div className="p-2 rounded-lg bg-success-bg">
                             <CheckCircle2 size={20} className="text-success" />
                         </div>
@@ -185,8 +194,11 @@ export default function AdminPage() {
                             <p className="text-2xl font-bold text-text">{counts.approved}</p>
                             <p className="text-xs text-text-muted">Aprovados</p>
                         </div>
-                    </div>
-                    <div className="card flex items-center gap-3">
+                    </button>
+                    <button
+                        onClick={() => { setStatusFilter('rejected'); setView('list'); }}
+                        className={`card flex items-center gap-3 text-left transition-all hover:scale-[1.02] cursor-pointer ${statusFilter === 'rejected' ? 'ring-2 ring-danger !bg-danger-bg' : ''}`}
+                    >
                         <div className="p-2 rounded-lg bg-danger-bg">
                             <XCircle size={20} className="text-danger" />
                         </div>
@@ -194,7 +206,7 @@ export default function AdminPage() {
                             <p className="text-2xl font-bold text-text">{counts.rejected}</p>
                             <p className="text-xs text-text-muted">Rejeitados</p>
                         </div>
-                    </div>
+                    </button>
                 </div>
 
                 {/* View Switcher */}
@@ -233,21 +245,10 @@ export default function AdminPage() {
                                     type="text"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="form-input pl-9"
+                                    className="form-input !pl-12"
                                     placeholder="Buscar por nome ou CPF..."
                                 />
                             </div>
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value as ClientStatus | 'all')}
-                                className="form-select w-full sm:w-48"
-                            >
-                                <option value="all">Todos os status</option>
-                                <option value="pending">Pendentes</option>
-                                <option value="approved">Aprovados</option>
-                                <option value="rejected">Rejeitados</option>
-                                <option value="incomplete">Incompletos</option>
-                            </select>
                         </div>
 
                         {/* Table */}
@@ -325,6 +326,7 @@ export default function AdminPage() {
                                                             {client.documents.map((doc) => (
                                                                 <div key={doc.id} className="border border-border rounded-md overflow-hidden">
                                                                     {doc.fileUrl.startsWith('data:image') ? (
+                                                                        // eslint-disable-next-line @next/next/no-img-element
                                                                         <img src={doc.fileUrl} alt={doc.fileName} className="w-20 h-20 object-cover" />
                                                                     ) : (
                                                                         <div className="w-20 h-20 flex items-center justify-center bg-surface-alt">

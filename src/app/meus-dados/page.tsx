@@ -213,6 +213,7 @@ export default function MyDataPage() {
                                 <div key={doc.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card/50 transition-colors hover:bg-surface group">
                                     {doc.fileUrl && doc.fileUrl.startsWith('data:image') ? (
                                         <div className="relative w-10 h-10 shrink-0">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={doc.fileUrl}
                                                 alt={doc.fileName}

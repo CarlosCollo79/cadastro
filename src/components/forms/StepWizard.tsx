@@ -24,32 +24,39 @@ export function StepWizard() {
     useEffect(() => {
         if (hasLoaded.current || !authLoaded) return;
 
+        hasLoaded.current = true;
         const mode = searchParams.get('mode');
         const stepParam = searchParams.get('step');
 
-        if (mode === 'edit') {
-            const stored = getLatestClient(user?.id);
-            if (stored) {
-                loadFormData({
-                    id: stored.id,
-                    personalData: stored.personalData,
-                    nationality: stored.nationality,
-                    address: stored.address,
-                    contact: stored.contact,
-                    professional: stored.professional,
-                    documents: stored.documents || [],
-                    notes: stored.notes,
-                });
+        async function initWizard() {
+            if (mode === 'edit') {
+                try {
+                    const stored = await getLatestClient(user?.id);
+                    if (stored) {
+                        loadFormData({
+                            id: stored.id,
+                            personalData: stored.personalData,
+                            nationality: stored.nationality,
+                            address: stored.address,
+                            contact: stored.contact,
+                            professional: stored.professional,
+                            documents: stored.documents || [],
+                            notes: stored.notes,
+                        });
+                    }
+                } catch (e) {
+                    console.error("Error loading client data", e);
+                }
             }
-        }
 
-        if (stepParam) {
-            const step = parseInt(stepParam);
-            if (!isNaN(step) && step >= 1 && step <= 5) {
-                setStep(step);
+            if (stepParam) {
+                const step = parseInt(stepParam);
+                if (!isNaN(step) && step >= 1 && step <= 5) {
+                    setStep(step);
+                }
             }
         }
-        hasLoaded.current = true;
+        initWizard();
     }, [searchParams, loadFormData, setStep, authLoaded, user?.id]);
 
     const currentStepInfo = WIZARD_STEPS.find((s) => s.id === currentStep);

@@ -23,7 +23,7 @@ export function AddressStep({ onNext, onBack }: Props) {
         register,
         handleSubmit,
         setValue,
-        watch,
+        getValues,
         formState: { errors },
     } = useForm<AddressInput>({
         resolver: zodResolver(addressSchema),
@@ -31,7 +31,7 @@ export function AddressStep({ onNext, onBack }: Props) {
     });
 
     const handleCepBlur = async () => {
-        const cep = watch('zipCode');
+        const cep = getValues('zipCode');
         if (!cep || cep.replace(/\D/g, '').length !== 8) return;
 
         setCepLoading(true);
