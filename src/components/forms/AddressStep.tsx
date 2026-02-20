@@ -51,8 +51,13 @@ export function AddressStep({ onNext, onBack }: Props) {
         onNext();
     };
 
+    const onError = (errors: any) => {
+        const errorMessages = Object.values(errors).map((e: any) => e.message).join('\n');
+        alert(`Erro de validação:\n${errorMessages}`);
+    };
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                 {/* País */}
                 <div>

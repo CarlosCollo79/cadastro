@@ -39,23 +39,29 @@ export function ReviewStep({ onBack }: Props) {
     };
 
     const handleSubmit = async () => {
-        const client: Client = {
-            id: state.id || await generateId(),
-            personalData: state.personalData as Client['personalData'],
-            nationality: state.nationality as Client['nationality'],
-            address: state.address as Client['address'],
-            contact: state.contact as Client['contact'],
-            professional: state.professional as Client['professional'],
-            documents: state.documents,
-            notes: state.notes,
-            status: 'pending',
-            riskLevel: 'nao_avaliado',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
+        try {
+            const client: Client = {
+                id: state.id || await generateId(),
+                personalData: state.personalData as Client['personalData'],
+                nationality: state.nationality as Client['nationality'],
+                address: state.address as Client['address'],
+                contact: state.contact as Client['contact'],
+                professional: state.professional as Client['professional'],
+                documents: state.documents,
+                notes: state.notes,
+                status: 'pending',
+                riskLevel: 'nao_avaliado',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            };
 
-        await saveClient(client, user?.id);
-        setSubmitted(true);
+            await saveClient(client, user?.id);
+            setSubmitted(true);
+        } catch (error: any) {
+            console.error(error);
+            const msg = error.message || JSON.stringify(error) || "Ocorreu um erro desconhecido.";
+            alert(`Erro ao gravar:\n${msg}`);
+        }
     };
 
     if (submitted) {

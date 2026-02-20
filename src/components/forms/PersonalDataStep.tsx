@@ -40,8 +40,13 @@ export function PersonalDataStep({ onNext }: Props) {
         onNext();
     };
 
+    const onError = (errors: any) => {
+        const errorMessages = Object.values(errors).map((e: any) => e.message).join('\n');
+        alert(`Erro de validação:\n${errorMessages}`);
+    };
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8">
             {/* Dados Pessoais */}
             <div>
                 <h3 className="text-sm font-semibold text-accent mb-4 uppercase tracking-wide">Dados Pessoais</h3>
