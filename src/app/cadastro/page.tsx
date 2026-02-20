@@ -4,10 +4,10 @@ import { FormProvider } from '@/lib/form-store';
 import { StepWizard } from '@/components/forms/StepWizard';
 import { useUser } from '@clerk/nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { getLatestClient } from '@/lib/storage';
 
-export default function CadastroPage() {
+function CadastroPageContent() {
     const { user, isSignedIn, isLoaded } = useUser();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -41,3 +41,14 @@ export default function CadastroPage() {
     );
 }
 
+export default function CadastroPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+            </div>
+        }>
+            <CadastroPageContent />
+        </Suspense>
+    );
+}

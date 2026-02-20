@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { getAllClients, updateClientStatus } from '@/lib/storage';
 import type { Client, ClientStatus } from '@/types/client';
 import Link from 'next/link';
@@ -33,7 +33,7 @@ import {
 import { Dashboard } from '@/components/admin/Dashboard';
 import { useUser, UserButton } from '@clerk/nextjs';
 import { useSearchParams } from 'next/navigation';
-export default function AdminPage() {
+function AdminPageContent() {
     const { isLoaded: isUserLoaded } = useUser();
 
     const STATUS_CONFIG: Record<ClientStatus, { label: string; className: string }> = {
@@ -525,5 +525,17 @@ function Detail({ label, value }: { label: string; value?: string }) {
             <p className="text-[10px] font-bold text-text-light uppercase tracking-wider mb-0.5">{label}</p>
             <p className="text-text font-medium truncate">{value || 'N/A'}</p>
         </div>
+    );
+}
+
+export default function AdminPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-surface flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+            </div>
+        }>
+            <AdminPageContent />
+        </Suspense>
     );
 }
