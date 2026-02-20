@@ -1,3 +1,5 @@
+'use server';
+
 interface CepResponse {
     cep: string;
     state: string;
