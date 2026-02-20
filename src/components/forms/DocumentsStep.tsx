@@ -2,7 +2,7 @@
 
 import { useFormStore } from '@/lib/form-store';
 import { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useDropzone, type FileRejection } from 'react-dropzone';
 import { ArrowLeft, ArrowRight, Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
 import type { DocumentType, ClientDocument } from '@/types/client';
 
@@ -23,8 +23,31 @@ export function DocumentsStep({ onNext, onBack }: Props) {
         { type: 'other', label: 'Outro' },
     ];
 
+    // O limite real em Base64 deve ser menor que 10MB para não estourar o servidor (limite seguro: 8MB)
+    const MAX_BASE64_SIZE = 8 * 1024 * 1024;
+
+    const getCurrentBase64Length = () => {
+        let total = 0;
+        state.documents.forEach((doc) => {
+            // Conta o tamanho do string base64 completo + header (ex: data:image/jpeg;base64,... )
+            total += doc.fileUrl.length;
+        });
+        return total;
+    };
+
     const onDrop = useCallback(
         (acceptedFiles: File[]) => {
+            const currentTotalSize = getCurrentBase64Length();
+            let newFilesBase64Size = 0;
+
+            // O arquivo cru engorda ~33% quando convertido para Base64
+            acceptedFiles.forEach(file => newFilesBase64Size += Math.ceil((file.size * 4) / 3));
+
+            if (currentTotalSize + newFilesBase64Size > MAX_BASE64_SIZE) {
+                alert(`O tamanho de dados da imagem excede o envio maximo suportado. Retire alguma imagem ou converta o arquivo novo para ser mais leve.`);
+                return;
+            }
+
             acceptedFiles.forEach((file) => {
                 const reader = new FileReader();
                 reader.onload = () => {
@@ -40,11 +63,25 @@ export function DocumentsStep({ onNext, onBack }: Props) {
                 reader.readAsDataURL(file);
             });
         },
-        [addDocument, selectedType]
+        [addDocument, selectedType, state.documents]
     );
+
+    const onDropRejected = useCallback((fileRejections: FileRejection[]) => {
+        const errorMessages = fileRejections.map(({ file, errors }) => {
+            const msgs = errors.map(e => {
+                if (e.code === 'file-too-large') return 'O arquivo excede o limite de 10MB.';
+                if (e.code === 'file-invalid-type') return 'Tipo de arquivo não suportado.';
+                return e.message;
+            }).join(' ');
+            return `- ${file.name}: ${msgs}`;
+        }).join('\n');
+
+        alert(`Não foi possível adicionar o documento:\n${errorMessages}`);
+    }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
+        onDropRejected,
         accept: {
             'image/*': ['.png', '.jpg', '.jpeg', '.webp'],
             'application/pdf': ['.pdf'],

@@ -23,6 +23,7 @@ function getLabel(value: string, options: ReadonlyArray<{ value: string; label: 
 
 export default function MyDataPage() {
     const [client, setClient] = useState<Client | null>(null);
+    const [isLoadingClient, setIsLoadingClient] = useState(true);
     const router = useRouter();
     const { user, isLoaded } = useUser();
 
@@ -37,11 +38,16 @@ export default function MyDataPage() {
         if (!isLoaded) return;
 
         async function fetchClient() {
-            const stored = await getLatestClient(user?.id);
-            if (stored) {
-                setClient(stored);
-            } else {
-                setClient(null);
+            setIsLoadingClient(true);
+            try {
+                const stored = await getLatestClient(user?.id);
+                if (stored) {
+                    setClient(stored);
+                } else {
+                    setClient(null);
+                }
+            } finally {
+                setIsLoadingClient(false);
             }
         }
 
@@ -62,7 +68,7 @@ export default function MyDataPage() {
         setClient(updatedClient);
     };
 
-    if (!isLoaded) {
+    if (!isLoaded || isLoadingClient) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>

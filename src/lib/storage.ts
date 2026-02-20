@@ -86,7 +86,7 @@ export async function getAllClients(): Promise<(Client & { userId?: string })[]>
     }));
 }
 
-export async function saveClient(client: Client, userId?: string): Promise<void> {
+export async function saveClient(client: Client, userId?: string): Promise<{ success: boolean }> {
     const { personalData, nationality, address, contact, professional, documents: clientDocs } = client;
 
     await db.transaction(async (tx) => {
@@ -203,6 +203,8 @@ export async function saveClient(client: Client, userId?: string): Promise<void>
             );
         }
     });
+
+    return { success: true };
 }
 
 export async function updateClientStatus(id: string, status: ClientStatus, userId?: string): Promise<void> {
