@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* === Cool Color Palette (Sober/Professional) === */
-  --color-primary: oklch(0.30 0.04 240);
-  --color-primary-light: oklch(0.45 0.06 235);
-  --color-secondary: oklch(0.55 0.03 220);
-  --color-accent: oklch(0.50 0.10 220);
-  --color-accent-hover: oklch(0.45 0.12 220);
+  /* === Blue Accent Palette (Light Mode - Stitch #066bf9) === */
+  --color-primary: oklch(0.50 0.20 259);
+  --color-primary-light: oklch(0.65 0.15 259);
+  --color-secondary: oklch(0.55 0.03 230);
+  --color-accent: oklch(0.54 0.22 259);
+  --color-accent-hover: oklch(0.48 0.24 259);
 
-  --color-surface: oklch(0.975 0.005 240);
-  --color-surface-alt: oklch(0.955 0.008 240);
-  --color-background: oklch(0.99 0.003 240);
+  --color-surface: oklch(0.975 0.005 230);
+  --color-surface-alt: oklch(0.955 0.008 230);
+  --color-background: oklch(0.98 0.004 230);
   --color-card: oklch(1.00 0 0);
 
-  --color-border: oklch(0.88 0.015 240);
-  --color-border-focus: oklch(0.55 0.10 220);
-  --color-ring: oklch(0.55 0.10 220 / 0.3);
+  --color-border: oklch(0.88 0.015 230);
+  --color-border-focus: oklch(0.55 0.20 240);
+  --color-ring: oklch(0.55 0.20 240 / 0.25);
 
-  --color-text: oklch(0.18 0.02 240);
-  --color-text-muted: oklch(0.48 0.02 240);
-  --color-text-light: oklch(0.62 0.015 240);
+  --color-text: oklch(0.18 0.02 230);
+  --color-text-muted: oklch(0.48 0.02 230);
+  --color-text-light: oklch(0.62 0.015 230);
   --color-text-inverse: oklch(0.98 0 0);
 
   --color-success: oklch(0.52 0.14 155);
@@ -28,12 +28,13 @@
   --color-warning-bg: oklch(0.95 0.03 75);
   --color-danger: oklch(0.55 0.18 25);
   --color-danger-bg: oklch(0.95 0.03 25);
-  --color-info: oklch(0.55 0.12 240);
-  --color-info-bg: oklch(0.95 0.03 240);
+  --color-info: oklch(0.55 0.18 259);
+  --color-info-bg: oklch(0.95 0.04 259);
 
   /* === Typography === */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
+
 
 * {
   box-sizing: border-box;
@@ -78,8 +79,8 @@ body {
 }
 
 .form-input:focus {
-  ring: 2px;
-  border-color: var(--color-border-focus);
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -1px;
   box-shadow: 0 0 0 3px var(--color-ring);
 }
 
@@ -254,10 +255,23 @@ body {
 /* === Card === */
 .card {
   background-color: var(--color-card);
-  border-radius: 0.75rem;
+  border-radius: 1rem;
   border: 1px solid var(--color-border);
   padding: 1.5rem;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.03);
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 0.05),
+    0 4px 6px -1px rgb(0 0 0 / 0.02),
+    0 2px 4px -2px rgb(0 0 0 / 0.02);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* === Badges === */

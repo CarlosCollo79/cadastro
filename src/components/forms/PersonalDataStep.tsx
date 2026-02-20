@@ -44,8 +44,8 @@ export function PersonalDataStep({ onNext }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             {/* Dados Pessoais */}
             <div>
-                <h3 className="text-sm font-semibold text-accent mb-4 uppercase tracking-wide">Identificação</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
+                <h3 className="text-sm font-semibold text-accent mb-4 uppercase tracking-wide">Dados Pessoais</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                     {/* CPF */}
                     <div>
                         <label className="form-label">CPF *</label>
@@ -63,16 +63,16 @@ export function PersonalDataStep({ onNext }: Props) {
                     </div>
 
                     {/* Nome */}
-                    <div className="lg:col-span-2">
+                    <div>
                         <label className="form-label">Nome Completo *</label>
-                        <input {...register('name')} className="form-input" placeholder="Nome completo" />
+                        <input {...register('name')} className="form-input" placeholder="Digite seu nome completo" />
                         {errors.name && <p className="form-error">{errors.name.message}</p>}
                     </div>
 
                     {/* Nome Social */}
-                    <div className="lg:col-span-2">
-                        <label className="form-label">Nome Social</label>
-                        <input {...register('socialName')} className="form-input" placeholder="Se aplicável" />
+                    <div>
+                        <label className="form-label">Nome Social (opcional)</label>
+                        <input {...register('socialName')} className="form-input" placeholder="Como você gostaria de ser chamado(a)" />
                     </div>
 
                     {/* Data Nascimento */}
@@ -95,7 +95,7 @@ export function PersonalDataStep({ onNext }: Props) {
                     <div>
                         <label className="form-label">Gênero *</label>
                         <select {...register('gender')} className="form-select">
-                            <option value="">Selecione</option>
+                            <option value="">Selecione uma opção</option>
                             {GENDER_OPTIONS.map((opt) => (
                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
                             ))}
@@ -107,7 +107,7 @@ export function PersonalDataStep({ onNext }: Props) {
                     <div>
                         <label className="form-label">Estado Civil *</label>
                         <select {...register('maritalStatus')} className="form-select">
-                            <option value="">Selecione</option>
+                            <option value="">Selecione uma opção</option>
                             {MARITAL_STATUS_OPTIONS.map((opt) => (
                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
                             ))}
@@ -117,21 +117,21 @@ export function PersonalDataStep({ onNext }: Props) {
 
                     {/* RG / CNH / CIN */}
                     <div>
-                        <label className="form-label">RG / CNH / CIN *</label>
+                        <label className="form-label">Documento de Identidade (RG/CNH/CIN) *</label>
                         <input {...register('rg')} className="form-input" placeholder="Número do documento" />
                         {errors.rg && <p className="form-error">{errors.rg.message}</p>}
                     </div>
 
                     {/* Órgão Expedidor */}
                     <div>
-                        <label className="form-label">Órgão Expedidor *</label>
+                        <label className="form-label">Órgão Emissor *</label>
                         <input {...register('rgIssuer')} className="form-input" placeholder="Ex: SSP/SP" />
                         {errors.rgIssuer && <p className="form-error">{errors.rgIssuer.message}</p>}
                     </div>
 
                     {/* Data Emissão Documento */}
                     <div>
-                        <label className="form-label">Data de Emissão do Documento *</label>
+                        <label className="form-label">Data de Emissão *</label>
                         <input
                             {...register('rgIssueDate')}
                             className="form-input"
@@ -147,8 +147,8 @@ export function PersonalDataStep({ onNext }: Props) {
 
                     {/* RNE */}
                     <div>
-                        <label className="form-label">RNE</label>
-                        <input {...register('rne')} className="form-input" placeholder="Se estrangeiro" />
+                        <label className="form-label">RNE (se estrangeiro)</label>
+                        <input {...register('rne')} className="form-input" placeholder="Registro Nacional de Estrangeiros" />
                     </div>
                 </div>
             </div>
@@ -159,9 +159,9 @@ export function PersonalDataStep({ onNext }: Props) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                     {/* UF */}
                     <div>
-                        <label className="form-label">Natural (UF) *</label>
+                        <label className="form-label">UF de Nascimento *</label>
                         <select {...register('birthState')} className="form-select">
-                            <option value="">Selecione</option>
+                            <option value="">Selecione uma opção</option>
                             {BRAZILIAN_STATES.map((s) => (
                                 <option key={s.value} value={s.value}>{s.label}</option>
                             ))}
@@ -171,8 +171,8 @@ export function PersonalDataStep({ onNext }: Props) {
 
                     {/* Cidade */}
                     <div>
-                        <label className="form-label">Natural (Cidade) *</label>
-                        <input {...register('birthCity')} className="form-input" placeholder="Informe a cidade" />
+                        <label className="form-label">Cidade de Nascimento *</label>
+                        <input {...register('birthCity')} className="form-input" placeholder="Digite a cidade de nascimento" />
                         {errors.birthCity && <p className="form-error">{errors.birthCity.message}</p>}
                     </div>
 
@@ -180,7 +180,7 @@ export function PersonalDataStep({ onNext }: Props) {
                     <div>
                         <label className="form-label">País de Origem *</label>
                         <select {...register('originCountry')} className="form-select">
-                            <option value="">Selecione</option>
+                            <option value="">Selecione uma opção</option>
                             {COUNTRIES.map((c) => (
                                 <option key={c.value} value={c.value}>{c.label}</option>
                             ))}
@@ -192,7 +192,7 @@ export function PersonalDataStep({ onNext }: Props) {
                     <div>
                         <label className="form-label">País de Residência *</label>
                         <select {...register('residenceCountry')} className="form-select">
-                            <option value="">Selecione</option>
+                            <option value="">Selecione uma opção</option>
                             {COUNTRIES.map((c) => (
                                 <option key={c.value} value={c.value}>{c.label}</option>
                             ))}
@@ -204,7 +204,7 @@ export function PersonalDataStep({ onNext }: Props) {
 
             <div className="flex justify-end pt-4">
                 <button type="submit" className="btn-primary">
-                    Próximo
+                    Próximo Passo
                     <ArrowRight size={16} />
                 </button>
             </div>

@@ -26,6 +26,13 @@ export default function MyDataPage() {
     const router = useRouter();
     const { user, isLoaded } = useUser();
 
+    const DOC_TYPE_LABELS: Record<string, string> = {
+        id_front: 'Identidade (Frente)',
+        id_back: 'Identidade (Verso)',
+        selfie: 'Selfie com Documento',
+        proof_address: 'Comprovante de Residência',
+    };
+
     useEffect(() => {
         if (!isLoaded) return;
 
@@ -67,7 +74,7 @@ export default function MyDataPage() {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-text-muted mb-4">Nenhum dado encontrado.</p>
+                    <p className="text-text-muted mb-4">Nenhum dado encontrado para sua conta.</p>
                     <Link href="/cadastro" className="btn-primary">
                         Iniciar Cadastro
                     </Link>
@@ -87,26 +94,33 @@ export default function MyDataPage() {
 
 
     return (
-        <div className="min-h-screen bg-background pb-12">
+        <div className="min-h-screen bg-background flex flex-col">
             <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
-                    <Link href="/" className="text-text-muted hover:text-text transition-colors">
-                        <ArrowLeft size={20} />
-                    </Link>
-                    <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-                            <span className="text-text-inverse font-bold text-xs">M</span>
-                        </div>
-                        <h1 className="font-semibold text-text">Onboarding Digital</h1>
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Link href="/" className="text-text-muted hover:text-text transition-colors">
+                            <ArrowLeft size={20} />
+                        </Link>
+                        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                            <div className="w-7 h-7 rounded-lg bg-accent flex items-center justify-center">
+                                <span className="text-text-inverse font-bold text-xs">O</span>
+                            </div>
+                            <span className="font-semibold text-text">Onboarding</span>
+                        </Link>
                     </div>
+                    <nav className="flex items-center gap-4">
+                        <Link href="/meus-dados" className="text-sm text-accent font-medium">
+                            Meus Dados
+                        </Link>
+                    </nav>
                 </div>
             </header>
 
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-                <div className="bg-surface rounded-lg p-6 border border-border">
-                    <h2 className="text-lg font-semibold text-text mb-1">Resumo do Cadastro</h2>
+            <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-8 w-full space-y-6">
+                <div>
+                    <h1 className="text-2xl font-bold text-text mb-1">Meus Dados de Cadastro</h1>
                     <p className="text-sm text-text-muted">
-                        Aqui você pode visualizar e atualizar seus dados cadastrais.
+                        Confira as informações fornecidas durante o seu processo de onboarding.
                     </p>
                 </div>
 
@@ -121,14 +135,14 @@ export default function MyDataPage() {
                         </button>
                     }>
                         <Field label="CPF" value={pd.cpf} />
-                        <Field label="Nome" value={pd.name} />
+                        <Field label="Nome Completo" value={pd.name} />
                         <Field label="Nome Social" value={pd.socialName} />
                         <Field label="Data de Nascimento" value={pd.birthDate} />
                         <Field label="Gênero" value={pd.gender ? getLabel(pd.gender, GENDER_OPTIONS) : undefined} />
                         <Field label="Estado Civil" value={pd.maritalStatus ? getLabel(pd.maritalStatus, MARITAL_STATUS_OPTIONS) : undefined} />
                         <Field label="RG / CNH / CIN" value={pd.rg} />
-                        <Field label="Órgão Expedidor" value={pd.rgIssuer} />
-                        <Field label="Data Emissão Documento" value={pd.rgIssueDate} />
+                        <Field label="Órgão Emissor" value={pd.rgIssuer} />
+                        <Field label="Data de Emissão" value={pd.rgIssueDate} />
                         <Field label="RNE" value={pd.rne} />
                     </Section>
 
@@ -147,7 +161,7 @@ export default function MyDataPage() {
                         <Field label="País de Residência" value={nat.residenceCountry ? getLabel(nat.residenceCountry, [...COUNTRIES]) : undefined} />
                     </Section>
 
-                    <Section title="Endereço" action={
+                    <Section title="Endereço de Residência" action={
                         <button
                             onClick={() => handleEdit(2)}
                             className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
@@ -156,7 +170,7 @@ export default function MyDataPage() {
                             Editar
                         </button>
                     }>
-                        <Field label="País" value={addr.country ? getLabel(addr.country, [...COUNTRIES]) : undefined} />
+                        <Field label="País de Residência" value={addr.country ? getLabel(addr.country, [...COUNTRIES]) : undefined} />
                         <Field label="CEP" value={addr.zipCode} />
                         <Field label="Logradouro" value={`${addr.streetType || ''} ${addr.street || ''}`.trim() || undefined} />
                         <Field label="Número" value={addr.number} />
@@ -166,40 +180,37 @@ export default function MyDataPage() {
                         <Field label="Complemento" value={addr.complement} />
                     </Section>
 
-                    <Section title="Contato & Filiação" action={
-                        <button
-                            onClick={() => handleEdit(3)}
-                            className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
-                        >
-                            <Edit2 size={12} />
-                            Editar
-                        </button>
-                    }>
-                        <Field label="Telefone" value={ct.phone} />
-                        <Field label="Celular" value={ct.mobile} />
-                        <Field label="Tipo E-mail" value={ct.emailType ? getLabel(ct.emailType, [...EMAIL_TYPE_OPTIONS]) : undefined} />
-                        <Field label="E-mail" value={ct.email} />
-                        <Field label="Nome do Pai" value={ct.fatherName} />
-                        <Field label="Nome da Mãe" value={ct.motherName} />
-                        <Field label="Indicação" value={ct.referral} />
-                    </Section>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Section title="Informações de Contato" action={
+                            <button
+                                onClick={() => handleEdit(3)}
+                                className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
+                            >
+                                <Edit2 size={12} />
+                                Editar
+                            </button>
+                        }>
+                            <Field label="Celular (WhatsApp)" value={ct.mobile} />
+                            <Field label="E-mail Principal" value={ct.email} />
+                            <Field label="Nome da Mãe" value={ct.motherName} />
+                        </Section>
 
-                    <Section title="Dados Profissionais" action={
-                        <button
-                            onClick={() => handleEdit(3)}
-                            className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
-                        >
-                            <Edit2 size={12} />
-                            Editar
-                        </button>
-                    }>
-                        <Field label="Natureza de Ocupação" value={prof.occupationNature} />
-                        <Field label="Ocupação Principal" value={prof.mainOccupation} />
-                        <Field label="Segmento de Atividade" value={prof.activitySegment} />
-                        <Field label="Renda Declarada" value={prof.declaredIncome} />
-                    </Section>
+                        <Section title="Dados Profissionais" action={
+                            <button
+                                onClick={() => handleEdit(3)}
+                                className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
+                            >
+                                <Edit2 size={12} />
+                                Editar
+                            </button>
+                        }>
+                            <Field label="Natureza da Ocupação" value={prof.occupationNature} />
+                            <Field label="Renda Mensal Declarada" value={prof.declaredIncome} />
+                            <Field label="Segmento de Atividade" value={prof.activitySegment} />
+                        </Section>
+                    </div>
 
-                    <Section title="Documentos" action={
+                    <Section title="Documentos Enviados" action={
                         <button
                             onClick={() => handleEdit(4)}
                             className="text-xs flex items-center gap-1 text-accent hover:text-primary transition-colors"
@@ -228,7 +239,7 @@ export default function MyDataPage() {
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium truncate leading-tight mb-1">{doc.fileName}</p>
                                         <p className="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
-                                            {doc.type.replace(/_/g, ' ')}
+                                            {DOC_TYPE_LABELS[doc.type] || doc.type}
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -237,7 +248,7 @@ export default function MyDataPage() {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="p-1.5 rounded-md hover:bg-info-bg text-text-light hover:text-info transition-colors"
-                                            title="Visualizar"
+                                            title="Editar"
                                         >
                                             <Edit2 size={14} />
                                         </a>
@@ -257,12 +268,18 @@ export default function MyDataPage() {
                             ))
                         ) : (
                             <p className="col-span-full text-sm text-text-muted py-2">
-                                Nenhum documento enviado.
+                                Documentos Enviados...
                             </p>
                         )}
                     </Section>
                 </div>
             </main>
+
+            <footer className="border-t border-border py-6 mt-auto">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center text-sm text-text-light">
+                    © {new Date().getFullYear()} Onboarding — Sistema de Onboarding Digital
+                </div>
+            </footer>
         </div>
     );
 }

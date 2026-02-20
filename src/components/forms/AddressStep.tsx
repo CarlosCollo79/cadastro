@@ -53,10 +53,10 @@ export function AddressStep({ onNext, onBack }: Props) {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                 {/* País */}
                 <div>
-                    <label className="form-label">País *</label>
+                    <label className="form-label">País de Residência *</label>
                     <select {...register('country')} className="form-select">
                         {COUNTRIES.map((c) => (
                             <option key={c.value} value={c.value}>{c.label}</option>
@@ -91,7 +91,7 @@ export function AddressStep({ onNext, onBack }: Props) {
                 <div>
                     <label className="form-label">Tipo de Logradouro *</label>
                     <select {...register('streetType')} className="form-select">
-                        <option value="">Selecione</option>
+                        <option value="">Selecione uma opção</option>
                         {STREET_TYPES.map((t) => (
                             <option key={t} value={t}>{t}</option>
                         ))}
@@ -100,16 +100,16 @@ export function AddressStep({ onNext, onBack }: Props) {
                 </div>
 
                 {/* Logradouro */}
-                <div className="lg:col-span-2">
+                <div>
                     <label className="form-label">Logradouro *</label>
-                    <input {...register('street')} className="form-input" placeholder="Nome da rua / avenida" />
+                    <input {...register('street')} className="form-input" placeholder="Rua, Avenida, etc." />
                     {errors.street && <p className="form-error">{errors.street.message}</p>}
                 </div>
 
                 {/* Número */}
                 <div>
                     <label className="form-label">Número *</label>
-                    <input {...register('number')} className="form-input" placeholder="Nº" />
+                    <input {...register('number')} className="form-input" placeholder="Número" />
                     {errors.number && <p className="form-error">{errors.number.message}</p>}
                 </div>
 
@@ -131,7 +131,7 @@ export function AddressStep({ onNext, onBack }: Props) {
                 <div>
                     <label className="form-label">Estado *</label>
                     <select {...register('state')} className="form-select">
-                        <option value="">Selecione</option>
+                        <option value="">Selecione uma opção</option>
                         {BRAZILIAN_STATES.map((s) => (
                             <option key={s.value} value={s.value}>{s.label}</option>
                         ))}
@@ -140,9 +140,9 @@ export function AddressStep({ onNext, onBack }: Props) {
                 </div>
 
                 {/* Complemento */}
-                <div className="lg:col-span-3">
+                <div>
                     <label className="form-label">Complemento</label>
-                    <input {...register('complement')} className="form-input" placeholder="Apto, bloco, sala..." />
+                    <input {...register('complement')} className="form-input" placeholder="..." />
                 </div>
             </div>
 
@@ -152,7 +152,7 @@ export function AddressStep({ onNext, onBack }: Props) {
                     Voltar
                 </button>
                 <button type="submit" className="btn-primary">
-                    Próximo
+                    Próximo Passo
                     <ArrowRight size={16} />
                 </button>
             </div>

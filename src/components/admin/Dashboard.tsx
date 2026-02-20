@@ -22,44 +22,53 @@ interface DashboardProps {
     clients: (Client & { userId?: string })[];
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = ['#006bf9', '#6366f1', '#94a3b8', '#1e293b', '#3b82f6', '#475569'];
 const STATUS_COLORS = {
-    pending: '#FFBB28',
-    approved: '#00C49F',
-    rejected: '#FF8042',
-    incomplete: '#8884d8'
+    pending: '#f59e0b', // Amber for pending
+    approved: '#006bf9', // Blue for approved (instead of green)
+    rejected: '#ef4444', // Red for rejected
+    incomplete: '#94a3b8' // Slate for incomplete
 };
 
 export function Dashboard({ clients }: DashboardProps) {
+    const dateLocale = 'pt-BR';
+    // 0. Total counts
+    const totals = useMemo(() => ({
+        total: clients.length,
+        pending: clients.filter(c => c.status === 'pending').length,
+        approved: clients.filter(c => c.status === 'approved').length,
+        rejected: clients.filter(c => c.status === 'rejected').length,
+    }), [clients]);
+
     // 1. Process Registrations Over Time (Last 30 days)
     const timeData = useMemo(() => {
         const last30Days = Array.from({ length: 30 }, (_, i) => {
             const d = new Date();
             d.setDate(d.getDate() - (29 - i));
-            return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            return d.toLocaleDateString(dateLocale, { day: '2-digit', month: '2-digit' });
         });
 
-        const counts = clients.reduce((acc: Record<string, number>, client) => {
-            const date = new Date(client.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        const dailyCounts = clients.reduce((acc: Record<string, number>, client) => {
+            const date = new Date(client.createdAt).toLocaleDateString(dateLocale, { day: '2-digit', month: '2-digit' });
             acc[date] = (acc[date] || 0) + 1;
             return acc;
         }, {});
 
         return last30Days.map(date => ({
             date,
-            count: counts[date] || 0
+            count: dailyCounts[date] || 0
         }));
     }, [clients]);
 
     // 2. Process Status Distribution
     const statusData = useMemo(() => {
-        const counts = clients.reduce((acc: Record<string, number>, client) => {
+        const statusCounts = clients.reduce((acc: Record<string, number>, client) => {
             acc[client.status] = (acc[client.status] || 0) + 1;
             return acc;
         }, {});
 
-        return Object.entries(counts).map(([name, value]) => ({
-            name: name === 'pending' ? 'Pendente' : name === 'approved' ? 'Aprovado' : name === 'rejected' ? 'Rejeitado' : 'Incompleto',
+        return Object.entries(statusCounts).map(([name, value]) => ({
+            name: name === 'pending' ? 'Pendente' : name === 'approved' ? 'Aprovado' : name === 'rejected' ? 'Reprovado' : 'Incompleto',
             value,
             key: name
         }));
@@ -98,29 +107,38 @@ export function Dashboard({ clients }: DashboardProps) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Registration History */}
                 <div className="card p-6">
-                    <h3 className="text-sm font-semibold text-text-muted mb-6 uppercase tracking-wider">Histórico de Cadastros (30 dias)</h3>
+                    <div className="mb-8">
+                        <h3 className="text-base font-bold text-text">Histórico de Cadastros</h3>
+                        <p className="text-xs text-text-muted">Volume de novos registros nos últimos 30 dias</p>
+                    </div>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={timeData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                                 <XAxis
                                     dataKey="date"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fontSize: 10, fill: '#94a3b8' }}
+                                    tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 500 }}
                                     interval={4}
+                                    dy={10}
                                 />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 500 }}
+                                    dx={-10}
+                                />
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                    labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}
+                                    labelStyle={{ fontWeight: 'bold', color: '#1e293b' }}
                                 />
                                 <Line
                                     type="monotone"
                                     dataKey="count"
-                                    stroke="#0088FE"
-                                    strokeWidth={3}
-                                    dot={{ r: 4, fill: '#0088FE', strokeWidth: 2, stroke: '#fff' }}
+                                    stroke="#006bf9"
+                                    strokeWidth={4}
+                                    dot={{ r: 4, fill: '#006bf9', strokeWidth: 2, stroke: '#fff' }}
                                     activeDot={{ r: 6, strokeWidth: 0 }}
                                 />
                             </LineChart>
@@ -130,29 +148,57 @@ export function Dashboard({ clients }: DashboardProps) {
 
                 {/* Status Distribution */}
                 <div className="card p-6">
-                    <h3 className="text-sm font-semibold text-text-muted mb-6 uppercase tracking-wider">Distribuição por Status</h3>
-                    <div className="h-[300px] w-full flex items-center justify-center">
+                    <div className="mb-8">
+                        <h3 className="text-base font-bold text-text">Distribuição por Status</h3>
+                        <p className="text-xs text-text-muted">Situação atual dos cadastros na plataforma</p>
+                    </div>
+                    <div className="h-[300px] w-full relative">
+                        {/* Central Label */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mb-12">
+                            <span className="text-2xl font-bold text-text">100%</span>
+                            <span className="text-[10px] font-bold text-text-light uppercase tracking-widest">Aggregate</span>
+                        </div>
+
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={statusData}
                                     cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
-                                    paddingAngle={5}
+                                    cy="40%"
+                                    innerRadius={70}
+                                    outerRadius={95}
+                                    paddingAngle={2}
                                     dataKey="value"
+                                    stroke="none"
                                 >
                                     {statusData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.key as keyof typeof STATUS_COLORS] || COLORS[index % COLORS.length]} />
+                                        <Cell
+                                            key={`cell-${index}`}
+                                            fill={STATUS_COLORS[entry.key as keyof typeof STATUS_COLORS] || COLORS[index % COLORS.length]}
+                                            strokeLinejoin="round"
+                                        />
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}
                                 />
-                                <Legend layout="vertical" align="right" verticalAlign="middle" iconType="circle" />
                             </PieChart>
                         </ResponsiveContainer>
+                    </div>
+
+                    {/* Custom Bottom Legend */}
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                        {statusData.map((entry, index) => (
+                            <div key={entry.key} className="flex items-center gap-2">
+                                <div
+                                    className="w-3 h-3 rounded-full shrink-0"
+                                    style={{ backgroundColor: STATUS_COLORS[entry.key as keyof typeof STATUS_COLORS] || COLORS[index % COLORS.length] }}
+                                />
+                                <span className="text-xs font-medium text-text-muted whitespace-nowrap">
+                                    {entry.name} ({totals.total > 0 ? Math.round((entry.value / totals.total) * 100) : 0}%)
+                                </span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -160,24 +206,28 @@ export function Dashboard({ clients }: DashboardProps) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Regional Distribution */}
                 <div className="card p-6">
-                    <h3 className="text-sm font-semibold text-text-muted mb-6 uppercase tracking-wider">Distribuição por Estado (UF)</h3>
+                    <div className="mb-8">
+                        <h3 className="text-base font-bold text-text">Distribuição Regional</h3>
+                        <p className="text-xs text-text-muted">Top 10 estados com mais registros</p>
+                    </div>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={stateData} layout="vertical">
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
                                 <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
                                 <YAxis
                                     dataKey="name"
                                     type="category"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fontSize: 12, fontWeight: 500, fill: '#475569' }}
+                                    tick={{ fontSize: 11, fontWeight: 600, fill: '#475569' }}
+                                    width={40}
                                 />
                                 <Tooltip
                                     cursor={{ fill: 'rgba(0,0,0,0.02)' }}
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}
                                 />
-                                <Bar dataKey="value" fill="#8884d8" radius={[0, 4, 4, 0]} barSize={20} />
+                                <Bar dataKey="value" fill="#6366f1" radius={[0, 6, 6, 0]} barSize={16} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -185,23 +235,32 @@ export function Dashboard({ clients }: DashboardProps) {
 
                 {/* Occupation Distribution */}
                 <div className="card p-6">
-                    <h3 className="text-sm font-semibold text-text-muted mb-6 uppercase tracking-wider">Top 5 Ocupações</h3>
+                    <div className="mb-8">
+                        <h3 className="text-base font-bold text-text">Principais Ocupações</h3>
+                        <p className="text-xs text-text-muted">Top 5 áreas de atuação declaradas</p>
+                    </div>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={occupationData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                                 <XAxis
                                     dataKey="name"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fontSize: 10, fill: '#475569' }}
+                                    tick={{ fontSize: 10, fill: '#475569', fontWeight: 500 }}
+                                    dy={10}
                                 />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 10, fill: '#94a3b8' }}
+                                    dx={-10}
+                                />
                                 <Tooltip
                                     cursor={{ fill: 'rgba(0,0,0,0.02)' }}
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}
                                 />
-                                <Bar dataKey="value" fill="#82ca9d" radius={[4, 4, 0, 0]} barSize={40} />
+                                <Bar dataKey="value" fill="#006bf9" radius={[6, 6, 0, 0]} barSize={32} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

@@ -11,17 +11,17 @@ interface Props {
     onBack: () => void;
 }
 
-const DOCUMENT_TYPES: { type: DocumentType; label: string }[] = [
-    { type: 'rg_front', label: 'RG (Frente)' },
-    { type: 'rg_back', label: 'RG (Verso)' },
-    { type: 'proof_address', label: 'Comprovante de Residência' },
-    { type: 'selfie', label: 'Selfie com Documento' },
-    { type: 'other', label: 'Outro Documento' },
-];
-
 export function DocumentsStep({ onNext, onBack }: Props) {
     const { state, addDocument, removeDocument } = useFormStore();
     const [selectedType, setSelectedType] = useState<DocumentType>('rg_front');
+
+    const DOCUMENT_TYPES: { type: DocumentType; label: string }[] = [
+        { type: 'rg_front', label: 'Identidade (Frente)' },
+        { type: 'rg_back', label: 'Identidade (Verso)' },
+        { type: 'proof_address', label: 'Comprovante de Residência' },
+        { type: 'selfie', label: 'Selfie com Documento' },
+        { type: 'other', label: 'Outro' },
+    ];
 
     const onDrop = useCallback(
         (acceptedFiles: File[]) => {
@@ -63,8 +63,9 @@ export function DocumentsStep({ onNext, onBack }: Props) {
                 <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value as DocumentType)}
-                    className="form-select max-w-xs"
+                    className="form-select w-full md:max-w-xs"
                 >
+                    <option value="" disabled>Selecione o tipo de documento</option>
                     {DOCUMENT_TYPES.map((dt) => (
                         <option key={dt.type} value={dt.type}>{dt.label}</option>
                     ))}
@@ -75,20 +76,20 @@ export function DocumentsStep({ onNext, onBack }: Props) {
             <div
                 {...getRootProps()}
                 className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-          ${isDragActive ? 'border-accent bg-info-bg' : 'border-border hover:border-accent hover:bg-surface'}
+          ${isDragActive ? 'border-accent bg-accent/5' : 'border-border hover:border-accent hover:bg-surface-alt'}
         `}
             >
                 <input {...getInputProps()} />
                 <Upload className="mx-auto mb-3 text-text-muted" size={32} />
                 {isDragActive ? (
-                    <p className="text-accent font-medium">Solte o arquivo aqui...</p>
+                    <p className="text-accent font-medium">Solte os arquivos aqui...</p>
                 ) : (
                     <>
                         <p className="text-text-muted font-medium">
-                            Arraste e solte ou clique para selecionar
+                            Clique para selecionar ou solte os arquivos aqui
                         </p>
                         <p className="text-text-light text-sm mt-1">
-                            PNG, JPG, WEBP ou PDF • Máximo 10MB
+                            PNG, JPG ou PDF (Máx. 10MB)
                         </p>
                     </>
                 )}
@@ -98,35 +99,35 @@ export function DocumentsStep({ onNext, onBack }: Props) {
             {state.documents.length > 0 && (
                 <div className="space-y-2">
                     <h4 className="text-sm font-medium text-text-muted">
-                        Documentos enviados ({state.documents.length})
+                        Documentos Enviados ({state.documents.length})
                     </h4>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 gap-3">
                         {state.documents.map((doc) => (
                             <div
                                 key={doc.id}
-                                className="flex items-center gap-3 p-3 rounded-md bg-surface border border-border"
+                                className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border overflow-hidden"
                             >
                                 {doc.fileUrl.startsWith('data:image') ? (
-                                    <ImageIcon size={18} className="text-info shrink-0" />
+                                    <ImageIcon size={18} className="text-info shrink-0 hidden xs:block" />
                                 ) : (
-                                    <FileText size={18} className="text-danger shrink-0" />
+                                    <FileText size={18} className="text-danger shrink-0 hidden xs:block" />
                                 )}
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium truncate">{doc.fileName}</p>
-                                    <p className="text-xs text-text-light">{getTypeLabel(doc.type)}</p>
+                                    <p className="text-sm font-semibold truncate text-text">{doc.fileName}</p>
+                                    <p className="text-[10px] text-text-light uppercase tracking-wider font-bold">{getTypeLabel(doc.type)}</p>
                                 </div>
                                 {doc.fileUrl.startsWith('data:image') && (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
                                         src={doc.fileUrl}
                                         alt={doc.fileName}
-                                        className="w-12 h-12 rounded object-cover border border-border"
+                                        className="w-10 h-10 rounded-lg object-cover border border-border shrink-0"
                                     />
                                 )}
                                 <button
                                     type="button"
                                     onClick={() => removeDocument(doc.id)}
-                                    className="p-1.5 rounded-md hover:bg-danger-bg text-text-light hover:text-danger transition-colors"
+                                    className="p-2 rounded-lg hover:bg-danger-bg text-text-light hover:text-danger transition-colors shrink-0"
                                 >
                                     <X size={16} />
                                 </button>
@@ -142,7 +143,7 @@ export function DocumentsStep({ onNext, onBack }: Props) {
                     Voltar
                 </button>
                 <button type="button" onClick={onNext} className="btn-primary">
-                    Próximo
+                    Próximo Passo
                     <ArrowRight size={16} />
                 </button>
             </div>

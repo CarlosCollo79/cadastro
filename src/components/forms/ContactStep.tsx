@@ -43,7 +43,7 @@ export function ContactStep({ onNext, onBack }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             {/* Contato */}
             <div>
-                <h3 className="text-sm font-semibold text-accent mb-4 uppercase tracking-wide">Contato & Filiação</h3>
+                <h3 className="text-sm font-semibold text-accent mb-4 uppercase tracking-wide">Informações de Contato</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                     {/* Telefone */}
                     <div>
@@ -62,7 +62,7 @@ export function ContactStep({ onNext, onBack }: Props) {
 
                     {/* Celular */}
                     <div>
-                        <label className="form-label">Celular *</label>
+                        <label className="form-label">Celular (WhatsApp) *</label>
                         <input
                             {...register('mobile')}
                             className="form-input"
@@ -89,7 +89,7 @@ export function ContactStep({ onNext, onBack }: Props) {
 
                     {/* E-mail */}
                     <div>
-                        <label className="form-label">E-mail *</label>
+                        <label className="form-label">E-mail Principal *</label>
                         <input {...register('email')} type="email" className="form-input" placeholder="email@exemplo.com" />
                         {errors.email && <p className="form-error">{errors.email.message}</p>}
                     </div>
@@ -97,19 +97,19 @@ export function ContactStep({ onNext, onBack }: Props) {
                     {/* Nome do Pai */}
                     <div>
                         <label className="form-label">Nome do Pai</label>
-                        <input {...register('fatherName')} className="form-input" placeholder="Nome completo" />
+                        <input {...register('fatherName')} className="form-input" placeholder="Nome completo do pai" />
                     </div>
 
                     {/* Nome da Mãe */}
                     <div>
                         <label className="form-label">Nome da Mãe</label>
-                        <input {...register('motherName')} className="form-input" placeholder="Nome completo" />
+                        <input {...register('motherName')} className="form-input" placeholder="Nome completo da mãe" />
                     </div>
 
                     {/* Indicação */}
-                    <div className="md:col-span-2">
+                    <div>
                         <label className="form-label">Indicação</label>
-                        <input {...register('referral')} className="form-input" placeholder="Quem indicou (se houver)" />
+                        <input {...register('referral')} className="form-input" placeholder="..." />
                     </div>
                 </div>
             </div>
@@ -122,7 +122,7 @@ export function ContactStep({ onNext, onBack }: Props) {
                     <div>
                         <label className="form-label">Natureza de Ocupação *</label>
                         <select {...register('occupationNature')} className="form-select">
-                            <option value="">Selecione</option>
+                            <option value="">Selecione uma opção</option>
                             {OCCUPATION_NATURES.map((n) => (
                                 <option key={n} value={n}>{n}</option>
                             ))}
@@ -141,7 +141,7 @@ export function ContactStep({ onNext, onBack }: Props) {
                     <div>
                         <label className="form-label">Segmento de Atividade *</label>
                         <select {...register('activitySegment')} className="form-select">
-                            <option value="">Selecione</option>
+                            <option value="">Selecione uma opção</option>
                             {ACTIVITY_SEGMENTS.map((s) => (
                                 <option key={s} value={s}>{s}</option>
                             ))}
@@ -151,7 +151,7 @@ export function ContactStep({ onNext, onBack }: Props) {
 
                     {/* Renda Declarada */}
                     <div>
-                        <label className="form-label">Renda Declarada *</label>
+                        <label className="form-label">Renda Mensal Declarada *</label>
                         <input {...register('declaredIncome')} className="form-input" placeholder="R$ 0,00" />
                         {errors.declaredIncome && <p className="form-error">{errors.declaredIncome.message}</p>}
                     </div>
@@ -164,7 +164,7 @@ export function ContactStep({ onNext, onBack }: Props) {
                     Voltar
                 </button>
                 <button type="submit" className="btn-primary">
-                    Próximo
+                    Próximo Passo
                     <ArrowRight size={16} />
                 </button>
             </div>
