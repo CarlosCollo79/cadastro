@@ -10,7 +10,7 @@ import { DocumentsStep } from './DocumentsStep';
 import { ReviewStep } from './ReviewStep';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { getLatestClient } from '@/lib/storage';
+import { getLatestClient, getClientDocuments } from '@/lib/storage';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 
@@ -41,8 +41,9 @@ export function StepWizard({ mode = 'create' }: { mode?: 'create' | 'edit' }) {
         async function initWizard() {
             if (mode === 'edit') {
                 try {
-                    const stored = await getLatestClient(user?.id);
+                    const stored = await getLatestClient(user?.id, false);
                     if (stored) {
+                        // Load structure first without heavy docs
                         loadFormData({
                             id: stored.id,
                             personalData: stored.personalData,
@@ -50,8 +51,22 @@ export function StepWizard({ mode = 'create' }: { mode?: 'create' | 'edit' }) {
                             address: stored.address,
                             contact: stored.contact,
                             professional: stored.professional,
-                            documents: stored.documents || [],
+                            documents: [],
                             notes: stored.notes,
+                        });
+
+                        // Fetch docs separated to prevent 413 Payload Too Large on Vercel
+                        getClientDocuments(stored.id).then(docs => {
+                            loadFormData({
+                                id: stored.id,
+                                personalData: stored.personalData,
+                                nationality: stored.nationality,
+                                address: stored.address,
+                                contact: stored.contact,
+                                professional: stored.professional,
+                                documents: docs,
+                                notes: stored.notes,
+                            });
                         });
                     }
                 } catch (e) {

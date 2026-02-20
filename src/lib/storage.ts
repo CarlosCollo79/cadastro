@@ -48,7 +48,7 @@ export async function getClientById(id: string, userId?: string): Promise<Client
     return result ? mapDbToClient(result) : undefined;
 }
 
-export async function getLatestClient(userId?: string): Promise<Client | undefined> {
+export async function getLatestClient(userId?: string, includeDocuments = false): Promise<Client | undefined> {
     if (!userId) return undefined;
 
     const result = await db.query.clients.findFirst({
@@ -57,12 +57,26 @@ export async function getLatestClient(userId?: string): Promise<Client | undefin
             eq(clients.tenantId, TENANT_ID)
         ),
         orderBy: [desc(clients.createdAt)],
-        with: {
+        with: includeDocuments ? {
             documents: true,
-        },
+        } : undefined,
     });
 
     return result ? mapDbToClient(result) : undefined;
+}
+
+export async function getClientDocuments(clientId: string): Promise<Client['documents']> {
+    const results = await db.query.documents.findMany({
+        where: eq(documents.clientId, clientId)
+    });
+
+    return results.map(doc => ({
+        id: doc.id,
+        type: doc.type as DocumentType,
+        fileName: doc.fileName,
+        fileUrl: doc.fileUrl,
+        uploadedAt: doc.uploadedAt,
+    }));
 }
 
 export async function getAllClients(): Promise<(Client & { userId?: string })[]> {

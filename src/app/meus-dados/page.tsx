@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import type { Client } from '@/types/client';
-import { saveClient } from '@/lib/storage';
+import { saveClient, getClientDocuments } from '@/lib/storage';
 
 function getLabel(value: string, options: ReadonlyArray<{ value: string; label: string }>) {
     return options.find((o) => o.value === value)?.label ?? value;
@@ -40,9 +40,14 @@ export default function MyDataPage() {
         async function fetchClient() {
             setIsLoadingClient(true);
             try {
-                const stored = await getLatestClient(user?.id);
+                const stored = await getLatestClient(user?.id, false);
                 if (stored) {
-                    setClient(stored);
+                    setClient({ ...stored, documents: [] });
+
+                    // Fetch documents asynchronously to avoid Vercel 413 limit
+                    getClientDocuments(stored.id).then(docs => {
+                        setClient(prev => prev ? { ...prev, documents: docs } : prev);
+                    }).catch(err => console.error("Error loading documents:", err));
                 } else {
                     setClient(null);
                 }
